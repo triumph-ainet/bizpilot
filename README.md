@@ -8,6 +8,7 @@
 ## The Problem
 
 Over 75% of Nigerian SME commerce happens on WhatsApp. Vendors spend hours every day:
+
 - Manually reading and responding to order messages
 - Calculating totals by hand
 - Chasing customers for payment confirmation
@@ -36,29 +37,29 @@ Low stock detected → Alert shown on vendor dashboard
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| 📸 **Snap to Catalog** | Photograph a product — Claude Vision extracts name, price, quantity |
-| 🤖 **AI Order Parsing** | Natural language orders parsed into structured baskets |
-| 💳 **Interswitch Checkout** | Real payment links via Interswitch Web Checkout API |
-| 🔔 **Auto Inventory** | Stock decrements automatically on payment confirmation |
-| ⚠️ **Low Stock Alerts** | Threshold-based alerts shown on vendor dashboard |
-| 🏦 **Bank Verification** | Account name verified via Interswitch during onboarding |
-| 🌍 **WhatsApp-Ready** | Adapter pattern means WhatsApp is a 1-day addition post-launch |
+| Feature                     | Description                                                         |
+| --------------------------- | ------------------------------------------------------------------- |
+| 📸 **Snap to Catalog**      | Photograph a product — Claude Vision extracts name, price, quantity |
+| 🤖 **AI Order Parsing**     | Natural language orders parsed into structured baskets              |
+| 💳 **Interswitch Checkout** | Real payment links via Interswitch Web Checkout API                 |
+| 🔔 **Auto Inventory**       | Stock decrements automatically on payment confirmation              |
+| ⚠️ **Low Stock Alerts**     | Threshold-based alerts shown on vendor dashboard                    |
+| 🏦 **Bank Verification**    | Account name verified via Interswitch during onboarding             |
+| 🌍 **WhatsApp-Ready**       | Adapter pattern means WhatsApp is a 1-day addition post-launch      |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 14 (App Router) |
-| Styling | Tailwind CSS |
-| Database | Supabase (PostgreSQL + Realtime) |
-| AI | Anthropic Claude API (`claude-sonnet-4`) |
-| Payments | Interswitch Web Checkout + Webhooks |
-| Auth | JWT (`jose`) |
-| Deployment | Vercel |
+| Layer      | Technology                               |
+| ---------- | ---------------------------------------- |
+| Framework  | Next.js 14 (App Router)                  |
+| Styling    | Tailwind CSS                             |
+| Database   | Supabase (PostgreSQL + Realtime)         |
+| AI         | Anthropic Claude API (`claude-sonnet-4`) |
+| Payments   | Interswitch Web Checkout + Webhooks      |
+| Auth       | JWT (`jose`)                             |
+| Deployment | Vercel                                   |
 
 ---
 
@@ -108,6 +109,7 @@ This creates all tables, indexes, RLS policies, and enables Realtime on the rele
    ```
 
 > For local development, use [ngrok](https://ngrok.com) to expose your webhook:
+>
 > ```bash
 > ngrok http 3000
 > # Use the ngrok HTTPS URL as your webhook base
@@ -263,12 +265,12 @@ Interswitch calls this on payment confirmation. The flow: verify HMAC signature 
 
 ## Onboarding Flow
 
-| Step | What happens |
-|---|---|
-| **1 — Business** | Business name, category, store slug, city |
-| **2 — First Product** | Snap photo → Claude extracts details → vendor confirms |
-| **3 — Bank Details** | Enter account number → Interswitch verifies account name live |
-| **4 — Ready** | Store link generated, shareable immediately |
+| Step                  | What happens                                                  |
+| --------------------- | ------------------------------------------------------------- |
+| **1 — Business**      | Business name, category, store slug, city                     |
+| **2 — First Product** | Snap photo → Claude extracts details → vendor confirms        |
+| **3 — Bank Details**  | Enter account number → Interswitch verifies account name live |
+| **4 — Ready**         | Store link generated, shareable immediately                   |
 
 The `onboarding_step` field ensures vendors who drop off mid-onboarding resume exactly where they left off on next login.
 
@@ -276,48 +278,48 @@ The `onboarding_step` field ensures vendors who drop off mid-onboarding resume e
 
 ## Demo Script (3 minutes)
 
-> *"Meet Aisha. She sells drinks on WhatsApp in Lagos."*
+> _"Meet Aisha. She sells drinks on WhatsApp in Lagos."_
 
-| Time | Action |
-|---|---|
-| 0:00 | **Register** — create Aisha's Drinks Store with phone number |
-| 0:30 | **Onboard** — snap shelf photo → AI extracts Pepsi 60cl, ₦300, 24 units → add GTBank account → account name verified |
-| 1:30 | **Chat** — customer types *"I want 2 Pepsi and 1 Indomie abeg"* → AI replies with order summary + Interswitch payment link |
-| 2:00 | **Pay** — hit **Simulate Payment** → inventory drops live on dashboard |
-| 2:20 | **Dashboard** — ₦47,200 today's revenue, Coke low-stock alert, order status updated to PAID |
-| 2:40 | **Pitch** — market size, roadmap, WhatsApp expansion |
+| Time | Action                                                                                                                     |
+| ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| 0:00 | **Register** — create Aisha's Drinks Store with phone number                                                               |
+| 0:30 | **Onboard** — snap shelf photo → AI extracts Pepsi 60cl, ₦300, 24 units → add GTBank account → account name verified       |
+| 1:30 | **Chat** — customer types _"I want 2 Pepsi and 1 Indomie abeg"_ → AI replies with order summary + Interswitch payment link |
+| 2:00 | **Pay** — hit **Simulate Payment** → inventory drops live on dashboard                                                     |
+| 2:20 | **Dashboard** — ₦47,200 today's revenue, Coke low-stock alert, order status updated to PAID                                |
+| 2:40 | **Pitch** — market size, roadmap, WhatsApp expansion                                                                       |
 
 ---
 
 ## Adding WhatsApp (Post-Hackathon)
 
-**Step 1** — Apply for Meta WhatsApp Business API *(start early — approval takes 1–2 weeks)*
+**Step 1** — Apply for Meta WhatsApp Business API _(start early — approval takes 1–2 weeks)_
 
 **Step 2** — Create `/src/lib/adapters/whatsapp.ts`:
 
 ```typescript
-import { ChannelAdapter, InboundMessage, OutboundMessage } from '../types'
+import { ChannelAdapter, InboundMessage, OutboundMessage } from '../types';
 
 export class WhatsAppAdapter implements ChannelAdapter {
   normalize(raw: Record<string, unknown>): InboundMessage {
-    const entry = (raw.entry as any)[0]
-    const msg   = entry.changes[0].value.messages[0]
+    const entry = (raw.entry as any)[0];
+    const msg = entry.changes[0].value.messages[0];
     return {
-      channel:   'whatsapp',
-      senderId:  msg.from,
-      vendorId:  entry.changes[0].value.metadata.phone_number_id,
-      text:      msg.text?.body,
+      channel: 'whatsapp',
+      senderId: msg.from,
+      vendorId: entry.changes[0].value.metadata.phone_number_id,
+      text: msg.text?.body,
       timestamp: new Date(Number(msg.timestamp) * 1000),
-    }
+    };
   }
 
   formatReply(data: { text: string; paymentUrl?: string }): OutboundMessage {
     return {
-      channel:     'whatsapp',
+      channel: 'whatsapp',
       recipientId: '',
-      text:        data.text,
-      paymentUrl:  data.paymentUrl,
-    }
+      text: data.text,
+      paymentUrl: data.paymentUrl,
+    };
   }
 }
 ```
@@ -325,12 +327,12 @@ export class WhatsAppAdapter implements ChannelAdapter {
 **Step 3** — Register it in `/src/lib/adapters/index.ts`:
 
 ```typescript
-import { WhatsAppAdapter } from './whatsapp'
+import { WhatsAppAdapter } from './whatsapp';
 
 export const adapters = {
   sim_chat: new SimChatAdapter(),
   whatsapp: new WhatsAppAdapter(), // ← one line
-}
+};
 ```
 
 **Done.** Zero changes to AI, orders, payments, or inventory.
@@ -339,15 +341,15 @@ export const adapters = {
 
 ## Database Schema
 
-| Table | Purpose |
-|---|---|
-| `vendors` | Store owners — business details, bank account, credentials |
-| `products` | Catalog — name, price, stock level, low stock threshold |
-| `orders` | Orders — status, total, channel, customer identifier |
-| `order_items` | Line items per order |
-| `payments` | Interswitch reference, status, paid timestamp |
-| `messages` | Full chat history per vendor (channel-agnostic) |
-| `stock_alerts` | Low stock records surfaced on dashboard |
+| Table          | Purpose                                                    |
+| -------------- | ---------------------------------------------------------- |
+| `vendors`      | Store owners — business details, bank account, credentials |
+| `products`     | Catalog — name, price, stock level, low stock threshold    |
+| `orders`       | Orders — status, total, channel, customer identifier       |
+| `order_items`  | Line items per order                                       |
+| `payments`     | Interswitch reference, status, paid timestamp              |
+| `messages`     | Full chat history per vendor (channel-agnostic)            |
+| `stock_alerts` | Low stock records surfaced on dashboard                    |
 
 Supabase **Realtime** is enabled on `orders`, `messages`, and `stock_alerts` — this powers live dashboard updates during the demo.
 
@@ -355,19 +357,19 @@ Supabase **Realtime** is enabled on `orders`, `messages`, and `stock_alerts` —
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Public anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Server-side key — never expose to client |
-| `GOOGLE_API_KEY` | ✅ | Gemini API key |
-| `INTERSWITCH_CLIENT_ID` | ✅ | From Interswitch developer console |
-| `INTERSWITCH_SECRET_KEY` | ✅ | For HMAC webhook signature verification |
-| `INTERSWITCH_MERCHANT_CODE` | ✅ | Required for payment initialization |
-| `INTERSWITCH_PAY_ITEM_ID` | ✅ | Payment item identifier |
-| `INTERSWITCH_BASE_URL` | ✅ | `https://sandbox.interswitchng.com` for dev |
-| `NEXTAUTH_SECRET` | ✅ | JWT signing secret — minimum 32 characters |
-| `NEXT_PUBLIC_APP_URL` | ✅ | Full app URL including protocol |
+| Variable                        | Required | Description                                 |
+| ------------------------------- | -------- | ------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | ✅       | Supabase project URL                        |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅       | Public anon key                             |
+| `SUPABASE_SERVICE_ROLE_KEY`     | ✅       | Server-side key — never expose to client    |
+| `GOOGLE_API_KEY`                | ✅       | Gemini API key                              |
+| `INTERSWITCH_CLIENT_ID`         | ✅       | From Interswitch developer console          |
+| `INTERSWITCH_SECRET_KEY`        | ✅       | For HMAC webhook signature verification     |
+| `INTERSWITCH_MERCHANT_CODE`     | ✅       | Required for payment initialization         |
+| `INTERSWITCH_PAY_ITEM_ID`       | ✅       | Payment item identifier                     |
+| `INTERSWITCH_BASE_URL`          | ✅       | `https://sandbox.interswitchng.com` for dev |
+| `NEXTAUTH_SECRET`               | ✅       | JWT signing secret — minimum 32 characters  |
+| `NEXT_PUBLIC_APP_URL`           | ✅       | Full app URL including protocol             |
 
 ---
 
@@ -392,6 +394,7 @@ vercel --prod
 ```
 
 After deploying:
+
 1. Update `NEXT_PUBLIC_APP_URL` to your Vercel URL
 2. Update your Interswitch webhook URL to:
    ```
@@ -402,10 +405,10 @@ After deploying:
 
 ## Team
 
-| Role | Responsibilities |
-|---|---|
-| **Software Engineer** | All UI/UX pages, auth flows, vendor dashboard, CRUD API routes, Supabase schema, Vercel deployment |
-| **AI Engineer** | Gemini API integration, Interswitch payment service, channel adapters, TypeScript types, webhook handler |
+| Role                  | Responsibilities                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Software Engineer** | All UI/UX pages, auth flows, vendor dashboard, CRUD API routes, Supabase schema, Vercel deployment       |
+| **AI Engineer**       | Gemini API integration, Interswitch payment service, channel adapters, TypeScript types, webhook handler |
 
 ---
 
@@ -415,4 +418,4 @@ After deploying:
 
 ---
 
-> *"We help African SME vendors run their entire business — orders, payments, and inventory — using just photos and chat, with no manual work."*
+> _"We help African SME vendors run their entire business — orders, payments, and inventory — using just photos and chat, with no manual work."_

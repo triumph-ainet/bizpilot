@@ -1,4 +1,4 @@
-import { InboundMessage, OutboundMessage, Channel } from '../../types';
+import { InboundMessage, OutboundMessage, Channel } from '../types';
 
 export interface ChannelAdapter {
   normalize(raw: Record<string, unknown>): InboundMessage;

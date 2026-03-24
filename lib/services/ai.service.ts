@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Product, ParsedOrder, ExtractedProduct } from '../../types';
+import { Product, ParsedOrder, ExtractedProduct } from '../types';
 import {
   orderParserPrompt,
   imageExtractorPrompt,

@@ -16,13 +16,13 @@ export const metadata: Metadata = {
   title: 'BizPilot — Run your business on autopilot',
   description: 'Orders, payments and inventory — handled automatically for African SMEs.',
   icons: { icon: '/favicon.ico' },
-}
- 
+};
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-}
+};
 
 export default function RootLayout({
   children,
