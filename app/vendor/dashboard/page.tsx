@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase';
+import { Package, Hourglass, TriangleAlert, CircleAlert, Hand } from 'lucide-react';
 import { BottomNav, Badge, Card } from '@/components/ui';
 import { DashboardStats, Order } from '@/lib/types';
 
@@ -141,7 +142,9 @@ export default async function DashboardPage() {
         <div className="flex justify-between items-start mb-5">
           <div>
             <p className="text-white/60 text-[13px]">Good morning,</p>
-            <h1 className="font-fraunces text-[22px] font-bold text-white">Aisha's Store 👋</h1>
+            <h1 className="font-fraunces text-[22px] font-bold text-white inline-flex items-center gap-1.5">
+              Aisha's Store <Hand className="w-5 h-5 text-amber" />
+            </h1>
           </div>
           <div className="w-10 h-10 bg-amber rounded-full flex items-center justify-center font-fraunces font-black text-lg text-green">
             A
@@ -161,12 +164,21 @@ export default async function DashboardPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-2.5">
           {[
-            { icon: '📦', val: stats.todayOrders, label: 'Orders today' },
-            { icon: '⏳', val: stats.pendingOrders, label: 'Pending' },
-            { icon: '⚠️', val: stats.lowStockCount, label: 'Low stock', red: true },
+            {
+              icon: <Package className="w-5 h-5" />,
+              val: stats.todayOrders,
+              label: 'Orders today',
+            },
+            { icon: <Hourglass className="w-5 h-5" />, val: stats.pendingOrders, label: 'Pending' },
+            {
+              icon: <TriangleAlert className="w-5 h-5" />,
+              val: stats.lowStockCount,
+              label: 'Low stock',
+              red: true,
+            },
           ].map((s) => (
             <Card key={s.label} className="p-3.5">
-              <div className="text-lg mb-2">{s.icon}</div>
+              <div className="mb-2 text-ink-mid">{s.icon}</div>
               <div
                 className={`font-fraunces text-[22px] font-black ${s.red ? 'text-red-500' : 'text-ink'}`}
               >
@@ -183,7 +195,7 @@ export default async function DashboardPage() {
             key={p.id}
             className="bg-gradient-to-r from-orange-50 to-amber-50 border-[1.5px] border-amber/40 rounded-2xl px-4 py-3.5 flex items-center gap-3"
           >
-            <span className="text-2xl">🔴</span>
+            <CircleAlert className="w-7 h-7 text-red-500" />
             <div className="flex-1">
               <p className="font-bold text-sm text-orange-800">{p.name} is running low</p>
               <p className="text-xs text-orange-600 mt-0.5">

@@ -1,23 +1,39 @@
 import { BottomNav } from '@/components/ui';
+import { Store, Smartphone, Link, Landmark, ChartColumn, Lock } from 'lucide-react';
 
 const SETTINGS_SECTIONS = [
   {
     items: [
-      { icon: '🏪', bg: 'bg-emerald-50', label: 'Business Name', val: "Aisha's Drinks Store" },
-      { icon: '📱', bg: 'bg-blue-50', label: 'Phone Number', val: '+234 812 345 6789' },
-      { icon: '🔗', bg: 'bg-pink-50', label: 'Store Link', val: 'bizpilot.co/aisha-drinks' },
+      {
+        icon: <Store className="w-5 h-5 text-emerald-700" />,
+        bg: 'bg-emerald-50',
+        label: 'Business Name',
+        val: "Aisha's Drinks Store",
+      },
+      {
+        icon: <Smartphone className="w-5 h-5 text-blue-700" />,
+        bg: 'bg-blue-50',
+        label: 'Phone Number',
+        val: '+234 812 345 6789',
+      },
+      {
+        icon: <Link className="w-5 h-5 text-pink-700" />,
+        bg: 'bg-pink-50',
+        label: 'Store Link',
+        val: 'bizpilot.co/aisha-drinks',
+      },
     ],
   },
   {
     items: [
       {
-        icon: '🏦',
+        icon: <Landmark className="w-5 h-5 text-purple-700" />,
         bg: 'bg-purple-50',
         label: 'Bank Account',
         val: 'GTBank · ****6789 · Verified ✓',
       },
       {
-        icon: '📊',
+        icon: <ChartColumn className="w-5 h-5 text-yellow-700" />,
         bg: 'bg-yellow-50',
         label: 'Low Stock Threshold',
         val: 'Alert when below 5 units',
@@ -25,7 +41,14 @@ const SETTINGS_SECTIONS = [
     ],
   },
   {
-    items: [{ icon: '🔒', bg: 'bg-indigo-50', label: 'Change Password', val: '' }],
+    items: [
+      {
+        icon: <Lock className="w-5 h-5 text-indigo-700" />,
+        bg: 'bg-indigo-50',
+        label: 'Change Password',
+        val: '',
+      },
+    ],
   },
 ];
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Search, CupSoda, Circle, CircleAlert, Soup, Cookie, Milk } from 'lucide-react';
 import { BottomNav, StockBar, PageHeader } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -11,7 +12,7 @@ const DEMO_PRODUCTS = [
     price: 300,
     quantity: 24,
     low_stock_threshold: 5,
-    emoji: '🥤',
+    icon: <CupSoda className="w-10 h-10 text-emerald-700" />,
     bg: 'bg-emerald-50',
   },
   {
@@ -20,7 +21,7 @@ const DEMO_PRODUCTS = [
     price: 400,
     quantity: 18,
     low_stock_threshold: 5,
-    emoji: '🟡',
+    icon: <Circle className="w-8 h-8 fill-orange-400 text-orange-400" />,
     bg: 'bg-orange-50',
   },
   {
@@ -29,7 +30,7 @@ const DEMO_PRODUCTS = [
     price: 300,
     quantity: 4,
     low_stock_threshold: 5,
-    emoji: '🔴',
+    icon: <CircleAlert className="w-10 h-10 text-red-500" />,
     bg: 'bg-red-50',
   },
   {
@@ -38,7 +39,7 @@ const DEMO_PRODUCTS = [
     price: 250,
     quantity: 36,
     low_stock_threshold: 5,
-    emoji: '🍜',
+    icon: <Soup className="w-10 h-10 text-purple-600" />,
     bg: 'bg-purple-50',
   },
   {
@@ -47,7 +48,7 @@ const DEMO_PRODUCTS = [
     price: 150,
     quantity: 6,
     low_stock_threshold: 7,
-    emoji: '🍪',
+    icon: <Cookie className="w-10 h-10 text-indigo-600" />,
     bg: 'bg-indigo-50',
   },
   {
@@ -56,7 +57,7 @@ const DEMO_PRODUCTS = [
     price: 500,
     quantity: 12,
     low_stock_threshold: 5,
-    emoji: '🥛',
+    icon: <Milk className="w-10 h-10 text-blue-600" />,
     bg: 'bg-blue-50',
   },
 ];
@@ -87,7 +88,7 @@ export default function CatalogPage() {
           </a>
         </div>
         <div className="bg-white/12 border border-white/15 rounded-xl px-4 py-3 flex items-center gap-2.5 text-white/70 text-sm">
-          <span>🔍</span>
+          <Search className="w-4 h-4" />
           <input
             className="bg-transparent outline-none flex-1 text-white placeholder:text-white/50 font-dm text-[15px]"
             placeholder="Search products..."
@@ -123,8 +124,8 @@ export default function CatalogPage() {
               key={product.id}
               className="bg-white rounded-2xl overflow-hidden shadow-card active:scale-95 transition-transform cursor-pointer"
             >
-              <div className={cn('h-24 flex items-center justify-center text-5xl', product.bg)}>
-                {product.emoji}
+              <div className={cn('h-24 flex items-center justify-center', product.bg)}>
+                {product.icon}
               </div>
               <div className="p-3">
                 <p className="font-bold text-[13px] text-ink leading-tight">{product.name}</p>

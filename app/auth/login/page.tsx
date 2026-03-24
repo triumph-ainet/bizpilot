@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Globe } from 'lucide-react';
 import { Logo, Button, Input } from '@/components/ui';
 
 export default function LoginPage() {
@@ -52,8 +53,9 @@ export default function LoginPage() {
                 Phone Number
               </label>
               <div className="flex gap-2.5">
-                <div className="bg-cream border-[1.5px] border-cream-dark rounded-xl px-3 py-3.5 text-[15px] font-medium text-ink text-center whitespace-nowrap">
-                  🇳🇬 +234
+                <div className="flex items-center gap-1.5 bg-cream border-[1.5px] border-cream-dark rounded-xl px-3 py-3.5 text-[15px] font-medium text-ink text-center whitespace-nowrap">
+                  <Globe className="w-4 h-4" />
+                  +234
                 </div>
                 <input
                   className="flex-1 bg-cream border-[1.5px] border-cream-dark rounded-xl px-4 py-3.5 font-dm text-[15px] text-ink placeholder:text-ink-light outline-none focus:border-green-bright transition-colors"

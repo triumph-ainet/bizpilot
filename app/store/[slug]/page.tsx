@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
@@ -37,7 +38,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
       <div className="relative px-7 pt-16 pb-10">
         {/* Badge */}
         <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white/80 mb-5 tracking-wider uppercase">
-          ⚡ Powered by BizPilot
+          <Zap className="w-4 h-4" /> Powered by BizPilot
         </div>
 
         <h1 className="font-fraunces text-[34px] font-black text-white leading-tight mb-2">
@@ -51,7 +52,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
 
         {sent ? (
           <div className="bg-white rounded-3xl p-7 shadow-card-lg text-center">
-            <div className="text-5xl mb-4">✅</div>
+            <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green" />
             <h2 className="font-fraunces text-xl font-bold text-ink mb-2">Order Received!</h2>
             <p className="text-sm text-ink-light leading-relaxed">
               We've received your order and a payment link will be sent to your WhatsApp shortly.
@@ -93,8 +94,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
                   Your WhatsApp Number
                 </label>
                 <div className="flex gap-2.5">
-                  <div className="bg-cream border-[1.5px] border-cream-dark rounded-xl px-3 py-3.5 text-[15px] font-medium text-ink whitespace-nowrap">
-                    🇳🇬 +234
+                  <div className="flex items-center gap-1.5 bg-cream border-[1.5px] border-cream-dark rounded-xl px-3 py-3.5 text-[15px] font-medium text-ink whitespace-nowrap">
+                    <Globe className="w-4 h-4" />
+                    +234
                   </div>
                   <input
                     className="flex-1 bg-cream border-[1.5px] border-cream-dark rounded-xl px-4 py-3.5 font-dm text-[15px] text-ink placeholder:text-ink-light outline-none focus:border-green-bright transition-colors"
@@ -117,9 +119,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         {/* Trust signals */}
         <div className="flex items-center justify-center gap-6">
           {[
-            { icon: '🔒', text: 'Secure payments' },
-            { icon: '⚡', text: 'Instant confirmation' },
-            { icon: '🏦', text: 'Interswitch powered' },
+            { icon: <Shield />, text: 'Secure payments' },
+            { icon: <Zap />, text: 'Instant confirmation' },
+            { icon: <Lock />, text: 'Interswitch powered' },
           ].map((t) => (
             <div key={t.text} className="flex items-center gap-1.5 text-xs text-white/55">
               <span>{t.icon}</span>

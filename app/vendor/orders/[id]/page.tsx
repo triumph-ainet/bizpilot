@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui';
+import { FileText, Check } from 'lucide-react';
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   // In production: fetch order from DB by params.id
@@ -72,7 +73,15 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             { key: 'Method', val: order.payment.method },
             { key: 'Reference', val: order.payment.ref, small: true },
             { key: 'Paid at', val: order.payment.paidAt },
-            { key: 'Status', val: '✓ Confirmed', green: true },
+            {
+              key: 'Status',
+              val: (
+                <span className="inline-flex items-center gap-1">
+                  <Check className="w-4 h-4" /> Confirmed
+                </span>
+              ),
+              green: true,
+            },
           ].map((row) => (
             <div
               key={row.key}
@@ -108,8 +117,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           ))}
         </div>
 
-        <button className="w-full bg-white border-[1.5px] border-cream-dark rounded-2xl py-4 font-dm font-semibold text-sm text-ink-mid">
-          📄 Download Receipt
+        <button className="w-full bg-white border-[1.5px] border-cream-dark rounded-2xl py-4 font-dm font-semibold text-sm text-ink-mid inline-flex items-center justify-center gap-1.5">
+          <FileText className="w-4 h-4" /> Download Receipt
         </button>
       </div>
     </div>

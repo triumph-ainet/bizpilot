@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Camera, PencilLine, Sparkles, Check } from 'lucide-react';
 import { Button, Input, Spinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -88,7 +89,15 @@ export default function AddProductPage() {
                 mode === m ? 'bg-green text-white shadow-card' : 'text-ink-light'
               )}
             >
-              {m === 'snap' ? '📸 Snap Photo' : '✏️ Type Manually'}
+              {m === 'snap' ? (
+                <>
+                  <Camera className="w-4 h-4" /> Snap Photo
+                </>
+              ) : (
+                <>
+                  <PencilLine className="w-4 h-4" /> Type Manually
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -121,7 +130,7 @@ export default function AddProductPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-ink-light">
-                  <span className="text-5xl">📸</span>
+                  <Camera className="w-12 h-12" />
                   <span className="text-sm font-medium">Tap to take a photo</span>
                 </div>
               )}
@@ -134,7 +143,9 @@ export default function AddProductPage() {
           <div className="bg-white rounded-2xl p-5 border-[1.5px] border-green-bright relative shadow-card space-y-4">
             {mode === 'snap' && (
               <span className="absolute -top-2.5 left-5 bg-green-bright text-white text-[10px] font-bold px-3 py-0.5 rounded-full">
-                ✨ AI EXTRACTED — tap to edit
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> AI EXTRACTED - tap to edit
+                </span>
               </span>
             )}
             <Input
@@ -171,7 +182,9 @@ export default function AddProductPage() {
 
         {form.name && (
           <Button variant="amber" loading={saving} onClick={handleSave}>
-            ✓ Add to Catalog
+            <span className="inline-flex items-center gap-1.5">
+              <Check className="w-4 h-4" /> Add to Catalog
+            </span>
           </Button>
         )}
         {mode === 'snap' && imagePreview && (

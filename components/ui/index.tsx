@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { ButtonHTMLAttributes, InputHTMLAttributes, forwardRef } from 'react';
+import { Home, Package, Receipt, MessageCircle, Settings } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'amber' | 'outline' | 'ghost' | 'danger';
@@ -200,11 +201,11 @@ export function PageHeader({
 }
 
 const NAV_ITEMS = [
-  { href: '/vendor/dashboard', icon: '🏠', label: 'Home' },
-  { href: '/vendor/catalog', icon: '📦', label: 'Catalog' },
-  { href: '/vendor/orders', icon: '🧾', label: 'Orders' },
-  { href: '/chat', icon: '💬', label: 'Chat' },
-  { href: '/vendor/settings', icon: '⚙️', label: 'Settings' },
+  { href: '/vendor/dashboard', icon: <Home className="w-5 h-5" />, label: 'Home' },
+  { href: '/vendor/catalog', icon: <Package className="w-5 h-5" />, label: 'Catalog' },
+  { href: '/vendor/orders', icon: <Receipt className="w-5 h-5" />, label: 'Orders' },
+  { href: '/chat', icon: <MessageCircle className="w-5 h-5" />, label: 'Chat' },
+  { href: '/vendor/settings', icon: <Settings className="w-5 h-5" />, label: 'Settings' },
 ];
 
 export function BottomNav({ active }: { active: string }) {

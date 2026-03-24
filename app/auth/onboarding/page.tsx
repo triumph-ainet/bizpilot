@@ -2,11 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { PartyPopper, Camera } from 'lucide-react';
 import { Button, Input, Spinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 const STEPS = ['Business', 'Products', 'Payments', 'Ready'];
-const CATEGORIES = ['🥤 Drinks & Snacks', '👗 Fashion', '🍲 Food', '📦 Other'];
+const CATEGORIES = ['Drinks & Snacks', 'Fashion', 'Food', 'Other'];
 const BANKS = [
   { name: 'GTBank', code: '058' },
   { name: 'Access Bank', code: '044' },
@@ -156,7 +157,8 @@ export default function OnboardingPage() {
             <>
               You're all
               <br />
-              <em className="text-amber not-italic">set!</em> 🎉
+              <em className="text-amber not-italic">set!</em>{' '}
+              <PartyPopper className="inline w-5 h-5 text-amber align-[-2px]" />
             </>
           )}
         </h1>
@@ -235,8 +237,8 @@ export default function OnboardingPage() {
                 onClick={() => fileRef.current?.click()}
                 className="w-full bg-white border-2 border-dashed border-cream-dark rounded-2xl py-10 flex flex-col items-center gap-3 hover:border-green-bright hover:bg-green-bright/5 transition-all"
               >
-                <div className="w-16 h-16 bg-cream rounded-full flex items-center justify-center text-3xl">
-                  📸
+                <div className="w-16 h-16 bg-cream rounded-full flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-ink-light" />
                 </div>
                 <div>
                   <p className="font-semibold text-ink">Snap a photo</p>
