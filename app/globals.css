@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-family: var(--font-dm), sans-serif;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .font-fraunces {
+    font-family: var(--font-fraunces), serif;
+  }
+
+  .font-dm {
+    font-family: var(--font-dm), sans-serif;
+  }
+
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .chat-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8b8a2' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@theme {
+  /* Colors */
+  --color-green: #0d3d2e;
+  --color-green-mid: #1a5c44;
+  --color-green-light: #2a7a5c;
+  --color-green-bright: #3dba8a;
+
+  --color-amber: #f5a623;
+  --color-amber-light: #ffd97d;
+
+  --color-cream: #faf6f0;
+  --color-cream-dark: #f0ebe1;
+
+  --color-ink: #1a1a1a;
+  --color-ink-mid: #444444;
+  --color-ink-light: #888888;
+
+  /* Radii */
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px rgba(13, 61, 46, 0.12);
+  --shadow-card-lg: 0 12px 48px rgba(13, 61, 46, 0.18);
+  --shadow-amber: 0 8px 24px rgba(245, 166, 35, 0.4);
+
+  /* Animations */
+  --animate-fade-up: fadeUp 0.35s ease both;
+  --animate-bounce-dot: typingBounce 1.2s infinite;
+  --animate-spin-slow: spin 0.8s linear infinite;
+  --animate-pulse-dot: pulse 2s infinite;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingBounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
