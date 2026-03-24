@@ -1,5 +1,5 @@
 import { createServerSupabase } from '../supabase';
-import { Product, OrderItem } from '../types';
+import { Product, OrderItem } from '../../types';
 
 export async function decrementBatch(items: OrderItem[]): Promise<void> {
   const supabase = createServerSupabase();

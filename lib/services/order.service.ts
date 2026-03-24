@@ -1,5 +1,5 @@
 import { createServerSupabase } from '../supabase';
-import { Order, OrderItem, ParsedOrder, InboundMessage, Product } from '../types';
+import { Order, OrderItem, ParsedOrder, InboundMessage, Product } from '../../types';
 
 export async function createOrder(
   parsed: ParsedOrder,

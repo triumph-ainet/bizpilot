@@ -1,4 +1,4 @@
-import { Product } from './types';
+import { Product } from '../types';
 
 // ─── Order Parser ─────────────────────────────────────────────────────────────
 export function orderParserPrompt(catalog: Product[]) {

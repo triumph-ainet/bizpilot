@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { PaymentInitResponse, AccountVerifyResponse } from '../types';
+import { PaymentInitResponse, AccountVerifyResponse } from '../../types';
 
 const BASE_URL = process.env.INTERSWITCH_BASE_URL!;
 const CLIENT_ID = process.env.INTERSWITCH_CLIENT_ID!;
