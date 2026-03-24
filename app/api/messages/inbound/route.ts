@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adapters } from '@/adapters';
+import { adapters } from '@/lib/adapters';
 import { parseOrder, generateOrderConfirmation } from '@/lib/services/ai.service';
 import { createOrder } from '@/lib/services/order.service';
 import { initializePayment } from '@/lib/services/payment.service';
