@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
+  const { slug } = (React as any).use(params);
   const [storeName, setStoreName] = useState('Vendor Store');
   const [storeReady, setStoreReady] = useState(false);
   const [storeError, setStoreError] = useState('');
@@ -19,7 +20,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
       setStoreReady(false);
       setStoreError('');
       try {
-        const res = await fetch(`/api/store/${params.slug}`, { cache: 'no-store' });
+        const res = await fetch(`/api/store/${slug}`, { cache: 'no-store' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Store not found');
         setStoreName(data.businessName || 'Vendor Store');
@@ -30,7 +31,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     }
 
     loadStore();
-  }, [params.slug]);
+  }, [slug]);
 
   async function handleOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +43,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channel: 'sim_chat',
-          vendorId: params.slug,
+          vendorId: slug,
           senderId: `+234${phone}`,
           text: order,
         }),
@@ -84,7 +85,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         )}
 
         {storeError && (
-          <div className="bg-red-50 rounded-2xl px-4 py-3 text-red-600 text-sm mb-5">{storeError}</div>
+          <div className="bg-red-50 rounded-2xl px-4 py-3 text-red-600 text-sm mb-5">
+            {storeError}
+          </div>
         )}
 
         {sent && storeReady ? (
@@ -92,7 +95,8 @@ export default function StorePage({ params }: { params: { slug: string } }) {
             <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green" />
             <h2 className="font-fraunces text-xl font-bold text-ink mb-2">Order Received!</h2>
             <p className="text-sm text-ink-light leading-relaxed">
-              We&apos;ve received your order and a payment link will be sent to your WhatsApp shortly.
+              We&apos;ve received your order and a payment link will be sent to your WhatsApp
+              shortly.
             </p>
             <button
               onClick={() => {
