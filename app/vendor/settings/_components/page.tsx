@@ -4,7 +4,7 @@ import { Store, Smartphone, Link, Landmark, ChartColumn, Lock } from 'lucide-rea
 import Header from './Header';
 import SettingsSections from './SettingsSections';
 import PasswordModal from './PasswordModal';
-import useVendorSettings from './useVendorSettings';
+import useVendorSettings from '../useVendorSettings';
 import { BottomNav } from '@/components/ui';
 
 export default function SettingsPage() {

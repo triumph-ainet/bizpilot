@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SettingsItem, EditingState, VendorSettings } from './types';
+import { SettingsItem, EditingState, VendorSettings } from '../types';
 import { X } from 'lucide-react';
 
 type Props = {

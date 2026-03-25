@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { PasswordChangeForm } from './types';
+import { PasswordChangeForm } from '../types';
 
 type Props = {
   visible: boolean;
