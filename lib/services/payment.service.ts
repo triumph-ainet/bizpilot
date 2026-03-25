@@ -2,10 +2,12 @@ import crypto from 'crypto';
 import { PaymentInitResponse, AccountVerifyResponse } from '../types';
 
 const BASE_URL = process.env.INTERSWITCH_BASE_URL!;
+const OAUTH_GATEWAY_URL = process.env.INTERSWITCH_OAUTH_GATEWAY_URL!;
 const CLIENT_ID = process.env.INTERSWITCH_CLIENT_ID!;
 const SECRET_KEY = process.env.INTERSWITCH_SECRET_KEY!;
 const MERCHANT_CODE = process.env.INTERSWITCH_MERCHANT_CODE!;
 const PAY_ITEM_ID = process.env.INTERSWITCH_PAY_ITEM_ID!;
+const MARKET_PLACE_URL = 'https://api-marketplace-routing.k8.isw.la/marketplace-routing/api/v1/'
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -17,7 +19,7 @@ async function getAccessToken(): Promise<string> {
   }
 
   const credentials = Buffer.from(`${CLIENT_ID}:${SECRET_KEY}`).toString('base64');
-  const res = await fetch(`${BASE_URL}/passport/oauth/token`, {
+  const res = await fetch(`${OAUTH_GATEWAY_URL}/passport/oauth/token`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${credentials}`,
@@ -79,6 +81,17 @@ export async function verifyPayment(reference: string) {
   return res.json();
 }
 
+export async function getAvailableBank() {
+  const token = await getAccessToken();
+
+  const res = await fetch(`${MARKET_PLACE_URL}/verify/identity/account-number/bank-list`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  console.log(res)
+
+  return res.json();
+}
+
 export async function verifyBankAccount(
   accountNumber: string,
   bankCode: string
@@ -86,22 +99,23 @@ export async function verifyBankAccount(
   const token = await getAccessToken();
 
   const res = await fetch(
-    `${BASE_URL}/api/v2/quickteller/customers/beneficiaries/banks/accounts?accountIdentifier=${accountNumber}&bankCode=${bankCode}`,
+    `${MARKET_PLACE_URL}/verify/identity/account-number/resolve`,
     {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+         accountNumber,
+         bankCode
+      })
     }
   );
 
   const data = await res.json().catch((e) => console.log(e));
 
-  return {
-    accountName: data.AccountName || data.accountName,
-    accountNumber: data.AccountNumber || accountNumber,
-    bankCode,
-  };
+  return data.bankDetails;
 }
 
 export function verifyWebhookSignature(payload: Record<string, string>): boolean {

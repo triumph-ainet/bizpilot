@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const result = await verifyBankAccount(accountNumber, bankCode);
     return NextResponse.json(result);
   } catch (error) {
+    console.error('Error verifying bank account:', error);
     return NextResponse.json({ error: 'Account verification failed' }, { status: 500 });
   }
 }
