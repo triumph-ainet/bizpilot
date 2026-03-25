@@ -1,6 +1,6 @@
 'use client';
 
-import { VendorSettings } from '../types';
+import { VendorSettings } from '../_types';
 
 export default function Header({ settings }: { settings: VendorSettings }) {
   const vendorInitial = settings.businessName?.charAt(0).toUpperCase() || 'A';

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui';
-import { VendorSettings, EditingState, PasswordChangeForm } from './types';
+import { VendorSettings, EditingState, PasswordChangeForm } from '../_types';
 
 export default function useVendorSettings() {
   const router = useRouter();
@@ -172,7 +172,11 @@ export default function useVendorSettings() {
   };
 
   const handleChangePassword = async () => {
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    if (
+      !passwordForm.currentPassword ||
+      !passwordForm.newPassword ||
+      !passwordForm.confirmPassword
+    ) {
       setPasswordError('All fields are required');
       return;
     }
@@ -223,7 +227,10 @@ export default function useVendorSettings() {
     setIsLoggingOut(true);
     setLogoutError('');
     try {
-      const res = await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
       if (!res.ok) throw new Error('Logout failed');
       showToast('Logged out successfully.', 'success');
       router.replace('/auth/login');

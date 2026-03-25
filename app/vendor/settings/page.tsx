@@ -1,10 +1,10 @@
 'use client';
 
 import { Store, Smartphone, Link, Landmark, ChartColumn, Lock } from 'lucide-react';
-import Header from './Header';
-import SettingsSections from './SettingsSections';
-import PasswordModal from './PasswordModal';
-import useVendorSettings from '../useVendorSettings';
+import Header from './_components/Header';
+import SettingsSections from './_components/SettingsSections';
+import PasswordModal from './_components/PasswordModal';
+import useVendorSettings from './_hooks/useVendorSettings';
 import { BottomNav } from '@/components/ui';
 
 export default function SettingsPage() {
@@ -84,7 +84,7 @@ export default function SettingsPage() {
           icon: <Link className="w-5 h-5 text-pink-700" />,
           bg: 'bg-pink-50',
           label: 'Store Link',
-          value: `bizpilot.co/${settings.storeSlug}`,
+          value: `${window.location.origin}/${settings.storeSlug}`,
           editable: false,
         },
       ],
