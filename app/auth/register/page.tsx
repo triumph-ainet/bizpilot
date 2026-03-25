@@ -8,7 +8,7 @@ import { Logo, Button, Input } from '@/components/ui';
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ businessName: '', phone: '', password: '' });
+  const [form, setForm] = useState({ email: '', phone: '', password: '' });
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +23,7 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Registration failed');
-      router.push('/onboarding');
+      router.push('/auth/onboarding');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -54,10 +54,11 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-3xl p-7 shadow-card-lg space-y-4">
             <Input
-              label="Business Name"
-              placeholder="Aisha's Drinks Store"
-              value={form.businessName}
-              onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               required
             />
 

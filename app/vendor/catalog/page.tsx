@@ -1,78 +1,64 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, CupSoda, Circle, CircleAlert, Soup, Cookie, Milk } from 'lucide-react';
-import { BottomNav, StockBar, PageHeader } from '@/components/ui';
+import { useEffect, useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import { BottomNav, StockBar } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { Product } from '@/lib/types';
 
-const DEMO_PRODUCTS = [
-  {
-    id: '1',
-    name: 'Pepsi 60cl',
-    price: 300,
-    quantity: 24,
-    low_stock_threshold: 5,
-    icon: <CupSoda className="w-10 h-10 text-emerald-700" />,
-    bg: 'bg-emerald-50',
-  },
-  {
-    id: '2',
-    name: 'Maltina 60cl',
-    price: 400,
-    quantity: 18,
-    low_stock_threshold: 5,
-    icon: <Circle className="w-8 h-8 fill-orange-400 text-orange-400" />,
-    bg: 'bg-orange-50',
-  },
-  {
-    id: '3',
-    name: 'Coke 50cl',
-    price: 300,
-    quantity: 4,
-    low_stock_threshold: 5,
-    icon: <CircleAlert className="w-10 h-10 text-red-500" />,
-    bg: 'bg-red-50',
-  },
-  {
-    id: '4',
-    name: 'Indomie Big',
-    price: 250,
-    quantity: 36,
-    low_stock_threshold: 5,
-    icon: <Soup className="w-10 h-10 text-purple-600" />,
-    bg: 'bg-purple-50',
-  },
-  {
-    id: '5',
-    name: 'Cabin Biscuit',
-    price: 150,
-    quantity: 6,
-    low_stock_threshold: 7,
-    icon: <Cookie className="w-10 h-10 text-indigo-600" />,
-    bg: 'bg-indigo-50',
-  },
-  {
-    id: '6',
-    name: 'Peak Milk 170g',
-    price: 500,
-    quantity: 12,
-    low_stock_threshold: 5,
-    icon: <Milk className="w-10 h-10 text-blue-600" />,
-    bg: 'bg-blue-50',
-  },
-];
-
-const FILTERS = ['All (12)', 'Drinks', 'Food', 'Low Stock'];
+const FILTERS = ['All', 'In Stock', 'Low Stock', 'Out of Stock'] as const;
+type Filter = (typeof FILTERS)[number];
 
 export default function CatalogPage() {
-  const [activeFilter, setActiveFilter] = useState('All (12)');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeFilter, setActiveFilter] = useState<Filter>('All');
   const [search, setSearch] = useState('');
 
-  const filtered = DEMO_PRODUCTS.filter((p) => {
-    if (search) return p.name.toLowerCase().includes(search.toLowerCase());
-    if (activeFilter === 'Low Stock') return p.quantity <= p.low_stock_threshold;
-    return true;
-  });
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch('/api/products', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load products');
+        setProducts(data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (term && !p.name.toLowerCase().includes(term)) return false;
+      if (activeFilter === 'In Stock') return p.quantity > p.low_stock_threshold;
+      if (activeFilter === 'Low Stock') return p.quantity > 0 && p.quantity <= p.low_stock_threshold;
+      if (activeFilter === 'Out of Stock') return p.quantity <= 0;
+      return true;
+    });
+  }, [products, activeFilter, search]);
+
+  const counts = useMemo(() => {
+    const outOfStock = products.filter((p) => p.quantity <= 0).length;
+    const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= p.low_stock_threshold).length;
+    const inStock = products.filter((p) => p.quantity > p.low_stock_threshold).length;
+    return { all: products.length, inStock, lowStock, outOfStock };
+  }, [products]);
+
+  const filterLabel = (filter: Filter) => {
+    if (filter === 'All') return `All (${counts.all})`;
+    if (filter === 'In Stock') return `In Stock (${counts.inStock})`;
+    if (filter === 'Low Stock') return `Low Stock (${counts.lowStock})`;
+    return `Out of Stock (${counts.outOfStock})`;
+  };
 
   return (
     <div className="min-h-screen bg-cream pb-24">
@@ -112,30 +98,50 @@ export default function CatalogPage() {
                   : 'bg-white border-cream-dark text-ink-mid'
               )}
             >
-              {f}
+              {filterLabel(f)}
             </button>
           ))}
         </div>
 
         {/* Product grid */}
         <div className="grid grid-cols-2 gap-3">
-          {filtered.map((product) => (
+          {!loading && !error && filtered.map((product) => (
             <div
               key={product.id}
               className="bg-white rounded-2xl overflow-hidden shadow-card active:scale-95 transition-transform cursor-pointer"
             >
-              <div className={cn('h-24 flex items-center justify-center', product.bg)}>
-                {product.icon}
+              <div className="h-24 flex items-center justify-center bg-emerald-50">
+                <span className="font-fraunces font-black text-2xl text-green-light">
+                  {product.name.slice(0, 1).toUpperCase()}
+                </span>
               </div>
               <div className="p-3">
                 <p className="font-bold text-[13px] text-ink leading-tight">{product.name}</p>
                 <p className="font-fraunces font-bold text-[17px] text-green-light mt-1">
-                  ₦{product.price}
+                  ₦{Number(product.price).toLocaleString()}
                 </p>
                 <StockBar quantity={product.quantity} threshold={product.low_stock_threshold} />
               </div>
             </div>
           ))}
+
+          {!loading && !error && filtered.length === 0 && (
+            <div className="col-span-2 bg-white rounded-2xl p-6 text-center text-sm text-ink-light shadow-card">
+              No products match this filter yet.
+            </div>
+          )}
+
+          {loading && (
+            <div className="col-span-2 bg-white rounded-2xl p-6 text-center text-sm text-ink-light shadow-card">
+              Loading your catalog...
+            </div>
+          )}
+
+          {error && (
+            <div className="col-span-2 bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-sm text-red-600">
+              {error}
+            </div>
+          )}
 
           {/* Add product card */}
           <a

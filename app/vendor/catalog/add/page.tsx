@@ -13,6 +13,7 @@ export default function AddProductPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', price: '', quantity: '', threshold: '5' });
 
   async function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -47,8 +48,9 @@ export default function AddProductPage() {
 
   async function handleSave() {
     setSaving(true);
+    setError('');
     try {
-      await fetch('/api/products', {
+      const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,7 +60,15 @@ export default function AddProductPage() {
           low_stock_threshold: Number(form.threshold),
         }),
       });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save product');
+      }
+
       router.push('/vendor/catalog');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save product');
     } finally {
       setSaving(false);
     }
@@ -187,6 +197,9 @@ export default function AddProductPage() {
             </span>
           </Button>
         )}
+
+        {error && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{error}</p>}
+
         {mode === 'snap' && imagePreview && (
           <button
             onClick={() => {

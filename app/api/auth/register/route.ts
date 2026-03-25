@@ -1,30 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
-import { SignJWT } from 'jose';
+import { signVendorToken } from '@/lib/auth';
 import crypto from 'crypto';
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'dev-secret-min-32-chars-long-here'
-);
 
 export async function POST(req: NextRequest) {
   try {
-    const { businessName, phone, password } = await req.json();
+    const { email, phone, password } = await req.json();
     const supabase = createServerSupabase();
+
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
 
     const { data: existing } = await supabase
       .from('vendors')
       .select('id')
-      .eq('phone', phone)
+      .eq('business_name', email.trim().toLowerCase())
       .single();
 
     if (existing) {
-      return NextResponse.json({ error: 'Phone number already registered' }, { status: 400 });
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
 
     const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+    const normalizedEmail = email.trim().toLowerCase();
+    const slugBase = normalizedEmail.split('@')[0] || 'store';
     const slug =
-      businessName
+      slugBase
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '-')
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
     const { data: vendor, error } = await supabase
       .from('vendors')
       .insert({
-        business_name: businessName,
+        business_name: normalizedEmail,
         phone,
         password_hash: passwordHash,
         store_slug: slug,
@@ -47,15 +49,14 @@ export async function POST(req: NextRequest) {
 
     if (error) throw new Error(error.message);
 
-    const token = await new SignJWT({ vendorId: vendor.id, phone })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(JWT_SECRET);
+    const token = await signVendorToken({ vendorId: vendor.id, phone });
 
     const response = NextResponse.json({ success: true, vendorId: vendor.id });
     response.cookies.set('bizpilot_token', token, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 7,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
     });
     return response;

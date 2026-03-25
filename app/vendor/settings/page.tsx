@@ -1,3 +1,7 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { BottomNav } from '@/components/ui';
 import { Store, Smartphone, Link, Landmark, ChartColumn, Lock } from 'lucide-react';
 
@@ -53,6 +57,32 @@ const SETTINGS_SECTIONS = [
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    setLogoutError('');
+
+    try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        throw new Error('Logout failed');
+      }
+
+      router.replace('/auth/login');
+      router.refresh();
+    } catch (err: unknown) {
+      setLogoutError(err instanceof Error ? err.message : 'Something went wrong');
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream pb-24">
       {/* Header */}
@@ -64,7 +94,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <p className="font-fraunces text-[20px] font-bold text-white">Aisha Ibrahim</p>
-            <p className="text-white/55 text-[13px]">Aisha's Drinks Store · Lagos</p>
+            <p className="text-white/55 text-[13px]">Aisha&apos;s Drinks Store · Lagos</p>
           </div>
         </div>
       </div>
@@ -92,8 +122,16 @@ export default function SettingsPage() {
           </div>
         ))}
 
-        <button className="w-full bg-white border-[1.5px] border-red-400 text-red-500 rounded-2xl py-4 font-dm font-semibold text-[15px] mt-2">
-          Log Out
+        {logoutError && (
+          <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{logoutError}</p>
+        )}
+
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="w-full bg-white border-[1.5px] border-red-400 text-red-500 rounded-2xl py-4 font-dm font-semibold text-[15px] mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isLoggingOut ? 'Logging out...' : 'Log Out'}
         </button>
       </div>
 

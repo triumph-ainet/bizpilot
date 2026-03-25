@@ -6,13 +6,39 @@ import { initializePayment } from '@/lib/services/payment.service';
 import { getVendorProducts } from '@/lib/services/inventory.service';
 import { createServerSupabase } from '@/lib/supabase';
 
+async function resolveVendorId(vendorIdentifier: string) {
+  const supabase = createServerSupabase();
+
+  const { data: byId } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('id', vendorIdentifier)
+    .single();
+
+  if (byId?.id) return byId.id;
+
+  const { data: bySlug } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('store_slug', vendorIdentifier)
+    .single();
+
+  return bySlug?.id || null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const raw = await req.json();
     const channel = raw.channel || 'sim_chat';
     const adapter = adapters[channel as keyof typeof adapters] || adapters.sim_chat;
     const message = adapter.normalize(raw);
-    const catalog = await getVendorProducts(message.vendorId).catch(() => []);
+    const vendorId = await resolveVendorId(message.vendorId);
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Store not found' }, { status: 404 });
+    }
+
+    const normalizedMessage = { ...message, vendorId };
+    const catalog = await getVendorProducts(vendorId).catch(() => []);
     const parsed = await parseOrder(message.text || '', catalog);
 
     if (parsed.items.length === 0) {
@@ -23,7 +49,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { order, items } = await createOrder(parsed, message, catalog);
+    const { order, items } = await createOrder(parsed, normalizedMessage, catalog);
     const payment = await initializePayment(
       order.id,
       order.total * 100, // convert to kobo
@@ -48,8 +74,8 @@ export async function POST(req: NextRequest) {
     );
 
     await supabase.from('messages').insert([
-      { vendor_id: message.vendorId, sender: 'customer', channel, content: message.text || '' },
-      { vendor_id: message.vendorId, sender: 'ai', channel, content: confirmationText },
+      { vendor_id: vendorId, sender: 'customer', channel, content: message.text || '' },
+      { vendor_id: vendorId, sender: 'ai', channel, content: confirmationText },
     ]);
 
     const reply = adapter.formatReply({ text: confirmationText, paymentUrl: payment.paymentUrl });

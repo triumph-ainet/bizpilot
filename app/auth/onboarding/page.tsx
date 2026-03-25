@@ -95,7 +95,7 @@ export default function OnboardingPage() {
   async function handleFinish() {
     setLoading(true);
     try {
-      await fetch('/api/vendors/onboarding', {
+      const res = await fetch('/api/vendors/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,7 +109,12 @@ export default function OnboardingPage() {
           step: 4,
         }),
       });
+      if (!res.ok) {
+        throw new Error('Failed to complete onboarding');
+      }
       router.push('/vendor/dashboard');
+    } catch {
+      setVerifyError('Could not complete onboarding. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -387,6 +392,13 @@ export default function OnboardingPage() {
             <Button onClick={() => setStep(3)} disabled={!verifiedName}>
               Confirm & Continue →
             </Button>
+
+            <button
+              onClick={() => setStep(3)}
+              className="w-full text-center text-sm text-ink-light py-2"
+            >
+              Skip for now, set up in Settings later →
+            </button>
           </div>
         )}
 

@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Globe } from 'lucide-react';
 import { Logo, Button, Input } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ phone: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +22,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
-      router.push('/vendor/dashboard');
+      router.push(data.redirectTo || '/vendor/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -48,25 +47,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-3xl p-7 shadow-card-lg space-y-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-ink-light uppercase tracking-wider">
-                Phone Number
-              </label>
-              <div className="flex gap-2.5">
-                <div className="flex items-center gap-1.5 bg-cream border-[1.5px] border-cream-dark rounded-xl px-3 py-3.5 text-[15px] font-medium text-ink text-center whitespace-nowrap">
-                  <Globe className="w-4 h-4" />
-                  +234
-                </div>
-                <input
-                  className="flex-1 bg-cream border-[1.5px] border-cream-dark rounded-xl px-4 py-3.5 font-dm text-[15px] text-ink placeholder:text-ink-light outline-none focus:border-green-bright transition-colors"
-                  type="tel"
-                  placeholder="081 234 5678"
-                  value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                  required
-                />
-              </div>
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              required
+            />
 
             <Input
               label="Password"

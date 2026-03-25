@@ -1,4 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase';
+import { getVendorSessionFromCookies } from '@/lib/auth';
+import Link from 'next/link';
 import { Package, Hourglass, TriangleAlert, CircleAlert, Hand } from 'lucide-react';
 import { BottomNav, Badge, Card } from '@/components/ui';
 import { DashboardStats, Order } from '@/lib/types';
@@ -37,83 +39,16 @@ async function getDashboardData(vendorId: string) {
   };
 }
 
-// Demo data fallback
-const DEMO = {
+const EMPTY_DASHBOARD = {
   stats: {
-    todayRevenue: 47200,
-    todayOrders: 18,
-    pendingOrders: 3,
-    lowStockCount: 2,
-    revenueChange: 23,
+    todayRevenue: 0,
+    todayOrders: 0,
+    pendingOrders: 0,
+    lowStockCount: 0,
+    revenueChange: 0,
   },
-  recentOrders: [
-    {
-      id: '1',
-      vendor_id: 'v1',
-      customer_identifier: '+2348123456789',
-      channel: 'sim_chat' as const,
-      status: 'paid' as const,
-      total: 900,
-      created_at: new Date().toISOString(),
-      items: [
-        {
-          id: 'i1',
-          order_id: '1',
-          product_id: 'p1',
-          product_name: 'Pepsi 60cl',
-          quantity: 2,
-          unit_price: 300,
-        },
-        {
-          id: 'i2',
-          order_id: '1',
-          product_id: 'p2',
-          product_name: 'Indomie Big',
-          quantity: 1,
-          unit_price: 250,
-        },
-      ],
-    },
-    {
-      id: '2',
-      vendor_id: 'v1',
-      customer_identifier: '+2348134567890',
-      channel: 'sim_chat' as const,
-      status: 'pending' as const,
-      total: 2650,
-      created_at: new Date().toISOString(),
-      items: [
-        {
-          id: 'i3',
-          order_id: '2',
-          product_id: 'p3',
-          product_name: 'Maltina 60cl',
-          quantity: 5,
-          unit_price: 400,
-        },
-      ],
-    },
-    {
-      id: '3',
-      vendor_id: 'v1',
-      customer_identifier: '+2348145678901',
-      channel: 'sim_chat' as const,
-      status: 'credit' as const,
-      total: 1350,
-      created_at: new Date().toISOString(),
-      items: [
-        {
-          id: 'i4',
-          order_id: '3',
-          product_id: 'p4',
-          product_name: 'Coke 50cl',
-          quantity: 3,
-          unit_price: 300,
-        },
-      ],
-    },
-  ],
-  lowStockProducts: [{ id: 'p3', name: 'Coke 50cl', quantity: 4, low_stock_threshold: 5 }],
+  recentOrders: [] as Order[],
+  lowStockProducts: [] as Array<{ id: string; name: string; quantity: number; low_stock_threshold: number }>,
 };
 
 const AVATAR_COLORS: Record<string, string> = {
@@ -123,12 +58,14 @@ const AVATAR_COLORS: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  let data = DEMO;
+  const session = await getVendorSessionFromCookies();
+  let data = EMPTY_DASHBOARD;
   try {
-    const vendorId = 'demo-vendor'; // replace with session vendorId
-    data = (await getDashboardData(vendorId)) as typeof DEMO;
+    if (session?.vendorId) {
+      data = await getDashboardData(session.vendorId);
+    }
   } catch {
-    /* use demo */
+    data = EMPTY_DASHBOARD;
   }
 
   const { stats, recentOrders, lowStockProducts } = data;
@@ -143,14 +80,14 @@ export default async function DashboardPage() {
           <div>
             <p className="text-white/60 text-[13px]">Good morning,</p>
             <h1 className="font-fraunces text-[22px] font-bold text-white inline-flex items-center gap-1.5">
-              Aisha's Store <Hand className="w-5 h-5 text-amber" />
+              Aisha&apos;s Store <Hand className="w-5 h-5 text-amber" />
             </h1>
           </div>
           <div className="w-10 h-10 bg-amber rounded-full flex items-center justify-center font-fraunces font-black text-lg text-green">
             A
           </div>
         </div>
-        <p className="text-white/50 text-xs mb-1.5">Today's Revenue</p>
+        <p className="text-white/50 text-xs mb-1.5">Today&apos;s Revenue</p>
         <div className="font-fraunces text-[40px] font-black text-white tracking-tight leading-none">
           <span className="text-xl font-semibold opacity-70">₦</span>
           {stats.todayRevenue.toLocaleString()}
@@ -210,13 +147,13 @@ export default async function DashboardPage() {
         <div>
           <div className="flex justify-between items-center mb-3.5">
             <h2 className="font-bold text-[15px] text-ink">Recent Orders</h2>
-            <a href="/vendor/orders" className="text-xs text-green-bright font-semibold">
+            <Link href="/vendor/orders" className="text-xs text-green-bright font-semibold">
               See all →
-            </a>
+            </Link>
           </div>
           <div className="space-y-2.5">
             {recentOrders.map((order) => (
-              <a key={order.id} href={`/vendor/orders/${order.id}`}>
+              <Link key={order.id} href={`/vendor/orders/${order.id}`}>
                 <Card className="p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${AVATAR_COLORS[order.status] || 'bg-gray-100 text-gray-600'}`}
@@ -238,7 +175,7 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                 </Card>
-              </a>
+              </Link>
             ))}
           </div>
         </div>

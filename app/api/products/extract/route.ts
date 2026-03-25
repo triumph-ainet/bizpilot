@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addProduct, getVendorProducts } from '@/lib/services/inventory.service';
-
-export async function GET(req: NextRequest) {
-  const vendorId = req.nextUrl.searchParams.get('vendorId') || 'demo-vendor';
-  const products = await getVendorProducts(vendorId);
-  return NextResponse.json(products);
-}
+import { extractProductFromImage } from '@/lib/services/ai.service';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const vendorId = body.vendorId || 'demo-vendor';
-    const product = await addProduct(vendorId, {
-      name: body.name,
-      price: Number(body.price),
-      quantity: Number(body.quantity),
-      image_url: body.image_url || null,
-      low_stock_threshold: Number(body.low_stock_threshold) || 5,
-    });
-    return NextResponse.json(product, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to add product' }, { status: 500 });
+    const { imageBase64, mimeType } = await req.json();
+    if (!imageBase64) {
+      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+    }
+
+    const product = await extractProductFromImage(imageBase64, mimeType || 'image/jpeg');
+    return NextResponse.json(product);
+  } catch {
+    return NextResponse.json({ error: 'Image extraction failed' }, { status: 500 });
   }
 }

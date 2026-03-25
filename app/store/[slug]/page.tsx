@@ -1,20 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
+  const [storeName, setStoreName] = useState('Vendor Store');
+  const [storeReady, setStoreReady] = useState(false);
+  const [storeError, setStoreError] = useState('');
   const [order, setOrder] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    async function loadStore() {
+      setStoreReady(false);
+      setStoreError('');
+      try {
+        const res = await fetch(`/api/store/${params.slug}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Store not found');
+        setStoreName(data.businessName || 'Vendor Store');
+        setStoreReady(true);
+      } catch (err: unknown) {
+        setStoreError(err instanceof Error ? err.message : 'Store not found');
+      }
+    }
+
+    loadStore();
+  }, [params.slug]);
 
   async function handleOrder(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setSubmitError('');
     try {
-      await fetch('/api/messages/inbound', {
+      const res = await fetch('/api/messages/inbound', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -24,7 +47,13 @@ export default function StorePage({ params }: { params: { slug: string } }) {
           text: order,
         }),
       });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not submit order');
+
       setSent(true);
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Could not submit order');
     } finally {
       setLoading(false);
     }
@@ -42,20 +71,28 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         </div>
 
         <h1 className="font-fraunces text-[34px] font-black text-white leading-tight mb-2">
-          Aisha's Drinks
-          <br />
-          Store
+          {storeName}
         </h1>
         <p className="text-white/55 text-sm mb-9">
           Lagos · Fast delivery · Orders processed automatically
         </p>
 
-        {sent ? (
+        {!storeReady && !storeError && (
+          <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white/80 text-sm mb-5">
+            Loading store...
+          </div>
+        )}
+
+        {storeError && (
+          <div className="bg-red-50 rounded-2xl px-4 py-3 text-red-600 text-sm mb-5">{storeError}</div>
+        )}
+
+        {sent && storeReady ? (
           <div className="bg-white rounded-3xl p-7 shadow-card-lg text-center">
             <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green" />
             <h2 className="font-fraunces text-xl font-bold text-ink mb-2">Order Received!</h2>
             <p className="text-sm text-ink-light leading-relaxed">
-              We've received your order and a payment link will be sent to your WhatsApp shortly.
+              We&apos;ve received your order and a payment link will be sent to your WhatsApp shortly.
             </p>
             <button
               onClick={() => {
@@ -109,9 +146,13 @@ export default function StorePage({ params }: { params: { slug: string } }) {
                 </div>
               </div>
 
-              <Button variant="amber" loading={loading} type="submit">
+              <Button variant="amber" loading={loading} type="submit" disabled={!storeReady}>
                 Send My Order →
               </Button>
+
+              {submitError && (
+                <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{submitError}</p>
+              )}
             </div>
           </form>
         )}

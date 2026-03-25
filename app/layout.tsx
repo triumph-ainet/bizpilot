@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${fraunces.variable} antialiased`}>
-      <body className="font-dm bg-cream min-h-screenl">{children}</body>
+      <body className="font-dm bg-cream min-h-screen">{children}</body>
     </html>
   );
 }
