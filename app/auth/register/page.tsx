@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Globe } from 'lucide-react';
-import { Logo, Button, Input } from '@/components/ui';
+import { Logo, Button, Input, useToast } from '@/components/ui';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', phone: '', password: '' });
   const [error, setError] = useState('');
@@ -23,9 +24,12 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Registration failed');
+      showToast('Account created. Continue onboarding to set up your store.', 'success');
       router.push('/auth/onboarding');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }

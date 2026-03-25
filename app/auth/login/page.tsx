@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Logo, Button, Input } from '@/components/ui';
+import { Logo, Button, Input, useToast } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -22,9 +23,12 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
+      showToast('Login successful. Redirecting to your dashboard...', 'success');
       router.push(data.redirectTo || '/vendor/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
