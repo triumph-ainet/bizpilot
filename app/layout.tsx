@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Fraunces } from 'next/font/google';
+import { ToastProvider } from '@/components/ui';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -31,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${fraunces.variable} antialiased`}>
-      <body className="font-dm bg-cream min-h-screen">{children}</body>
+      <body className="font-dm bg-cream min-h-screen">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

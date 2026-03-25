@@ -6,12 +6,13 @@ type VendorJwtPayload = {
   phone?: string;
 };
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'dev-secret-min-32-chars-long-here'
-);
+const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
 
 export async function signVendorToken(payload: VendorJwtPayload) {
-  return new SignJWT(payload).setProtectedHeader({ alg: 'HS256' }).setExpirationTime('7d').sign(JWT_SECRET);
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('7d')
+    .sign(JWT_SECRET);
 }
 
 export async function verifyVendorToken(token?: string) {

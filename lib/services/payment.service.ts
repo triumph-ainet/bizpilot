@@ -7,7 +7,15 @@ const SECRET_KEY = process.env.INTERSWITCH_SECRET_KEY!;
 const MERCHANT_CODE = process.env.INTERSWITCH_MERCHANT_CODE!;
 const PAY_ITEM_ID = process.env.INTERSWITCH_PAY_ITEM_ID!;
 
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
 async function getAccessToken(): Promise<string> {
+  const now = Date.now();
+
+  if (cachedToken && cachedToken.expiresAt > now) {
+    return cachedToken.token;
+  }
+
   const credentials = Buffer.from(`${CLIENT_ID}:${SECRET_KEY}`).toString('base64');
   const res = await fetch(`${BASE_URL}/passport/oauth/token`, {
     method: 'POST',
@@ -18,7 +26,14 @@ async function getAccessToken(): Promise<string> {
     body: 'grant_type=client_credentials&scope=profile',
   });
   const data = await res.json();
-  return data.access_token;
+
+  const expiresIn = data.expires_in || 3600;
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: now + expiresIn * 1000,
+  };
+
+  return cachedToken.token;
 }
 
 export async function initializePayment(
@@ -50,7 +65,6 @@ export async function initializePayment(
   return { paymentUrl, reference };
 }
 
-// ─── Verify a payment by reference ───────────────────────────────────────────
 export async function verifyPayment(reference: string) {
   const token = await getAccessToken();
   const hash = crypto
@@ -81,7 +95,7 @@ export async function verifyBankAccount(
     }
   );
 
-  const data = await res.json();
+  const data = await res.json().catch((e) => console.log(e));
 
   return {
     accountName: data.AccountName || data.accountName,

@@ -1,7 +1,16 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ButtonHTMLAttributes, InputHTMLAttributes, forwardRef } from 'react';
+import {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  createContext,
+  forwardRef,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 import { Home, Package, Receipt, MessageCircle, Settings } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -233,4 +242,77 @@ export function BottomNav({ active }: { active: string }) {
       ))}
     </nav>
   );
+}
+
+type ToastType = 'success' | 'error' | 'info';
+
+interface Toast {
+  id: number;
+  type: ToastType;
+  message: string;
+}
+
+const ToastContext = createContext<{
+  showToast: (message: string, type?: ToastType) => void;
+} | null>(null);
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const removeToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  const showToast = useCallback(
+    (message: string, type: ToastType = 'info') => {
+      const id = Date.now() + Math.floor(Math.random() * 1000);
+      setToasts((prev) => [...prev, { id, type, message }]);
+      setTimeout(() => removeToast(id), 3200);
+    },
+    [removeToast]
+  );
+
+  const value = useMemo(() => ({ showToast }), [showToast]);
+
+  const styles: Record<ToastType, string> = {
+    success: 'bg-green text-white border-green-mid',
+    error: 'bg-red-500 text-white border-red-600',
+    info: 'bg-ink text-white border-ink-mid',
+  };
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <div className="fixed top-4 right-4 z-[70] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={cn(
+              'border rounded-xl px-4 py-3 shadow-card-lg animate-in slide-in-from-top-2 duration-200',
+              styles[toast.type]
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-medium leading-relaxed">{toast.message}</p>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="text-white/80 hover:text-white text-lg leading-none"
+                aria-label="Dismiss notification"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+
+export function useToast() {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToast must be used within ToastProvider');
+  }
+  return context;
 }
