@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, phone, password } = await req.json();
+    const { email, phone, businessName, password } = await req.json();
     const supabase = createServerSupabase();
 
     if (!email || typeof email !== 'string') {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await supabase
       .from('vendors')
       .select('id')
-      .eq('business_name', email.trim().toLowerCase())
+      .eq('email', email.trim().toLowerCase())
       .single();
 
     if (existing) {
@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-    const normalizedEmail = email.trim().toLowerCase();
-    const slugBase = normalizedEmail.split('@')[0] || 'store';
+    const slugBase = businessName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 30);
     const slug =
       slugBase
         .toLowerCase()
@@ -37,7 +36,8 @@ export async function POST(req: NextRequest) {
     const { data: vendor, error } = await supabase
       .from('vendors')
       .insert({
-        business_name: normalizedEmail,
+        email: email.trim().toLowerCase(),
+        business_name: businessName,
         phone,
         password_hash: passwordHash,
         store_slug: slug,

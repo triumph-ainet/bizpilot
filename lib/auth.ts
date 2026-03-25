@@ -6,7 +6,7 @@ type VendorJwtPayload = {
   phone?: string;
 };
 
-const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 export async function signVendorToken(payload: VendorJwtPayload) {
   return new SignJWT(payload)

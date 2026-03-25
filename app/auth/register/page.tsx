@@ -9,7 +9,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', phone: '', password: '' });
+  const [form, setForm] = useState({ email: '', phone: '', businessName: '', password: '' });
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -63,6 +63,14 @@ export default function RegisterPage() {
               placeholder="you@example.com"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              required
+            />
+            <Input
+              label="Business Name"
+              type="text"
+              placeholder="Your business name"
+              value={form.businessName}
+              onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
               required
             />
 

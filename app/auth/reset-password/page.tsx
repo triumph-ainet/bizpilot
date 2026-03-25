@@ -1,30 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Logo, Button, Input, useToast } from '@/components/ui';
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
+  const token = useMemo(() => searchParams.get('token') || '', [searchParams]);
+  const [form, setForm] = useState({ password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
-      const res = await fetch('/api/auth/login', {
+      if (!token) throw new Error('Missing reset token');
+      if (form.password.length < 8) throw new Error('Password must be at least 8 characters');
+      if (form.password !== form.confirmPassword) throw new Error('Passwords do not match');
+
+      const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ token, password: form.password }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-      showToast('Login successful. Redirecting to your dashboard...', 'success');
-      router.push(data.redirectTo || '/vendor/dashboard');
+      if (!res.ok) throw new Error(data.error || 'Could not reset password');
+
+      showToast('Password updated successfully. Please sign in.', 'success');
+      router.push(data.redirectTo || '/auth/login');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       setError(message);
@@ -37,35 +46,35 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-green relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(61,186,138,0.15),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(245,166,35,0.1),transparent_50%)]" />
-      <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full border border-white/6" />
-
       <div className="relative px-7 pt-14 pb-10 flex flex-col min-h-screen">
         <Logo />
 
         <div className="mt-12 mb-10">
           <h1 className="font-fraunces text-[36px] font-black text-white leading-[1.15]">
-            Welcome <em className="text-amber not-italic">back.</em>
+            Choose a new <em className="text-amber not-italic">password.</em>
           </h1>
-          <p className="text-white/55 text-sm mt-2">Sign in to manage your store.</p>
+          <p className="text-white/55 text-sm mt-2">
+            Use at least 8 characters for better security.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-3xl p-7 shadow-card-lg space-y-4">
             <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              label="New Password"
+              type="password"
+              placeholder="Enter a new password"
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               required
             />
 
             <Input
-              label="Password"
+              label="Confirm Password"
               type="password"
-              placeholder="Your password"
-              value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              placeholder="Repeat your new password"
+              value={form.confirmPassword}
+              onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
               required
             />
 
@@ -74,24 +83,10 @@ export default function LoginPage() {
             )}
 
             <Button loading={loading} type="submit">
-              Sign In →
+              Update Password
             </Button>
-
-            <p className="text-center text-sm text-ink-light">
-              Forgot password?{' '}
-              <a href="/auth/forgot-password" className="text-green-light font-semibold">
-                Reset it
-              </a>
-            </p>
           </div>
         </form>
-
-        <p className="text-center mt-5 text-sm text-white/50">
-          New here?{' '}
-          <a href="/auth/register" className="text-amber font-semibold">
-            Create your store
-          </a>
-        </p>
       </div>
     </div>
   );
