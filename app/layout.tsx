@@ -16,7 +16,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: 'BizPilot — Run your business on autopilot',
   description: 'Orders, payments and inventory — handled automatically for African SMEs.',
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/logo.webp' },
 };
 
 export const viewport: Viewport = {
