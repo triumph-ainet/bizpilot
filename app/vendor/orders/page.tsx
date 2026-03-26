@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { BottomNav, Badge } from '@/components/ui';
+import OrderChat from './_components/OrderChat';
 import { cn } from '@/lib/utils';
 import { Order } from '@/lib/types';
 
@@ -104,53 +105,64 @@ export default function OrdersPage() {
       </div>
 
       <div className="px-6 py-5 space-y-3">
-        {!loading && !error && filteredOrders.map((order) => (
-          <a key={order.id} href={`/vendor/orders/${order.id}`}>
-            <div className="bg-white rounded-2xl p-4 shadow-card active:scale-[0.98] transition-transform">
-              {/* Top row */}
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <p className="text-[11px] text-ink-light">
-                    #{order.id.slice(0, 8).toUpperCase()} · {formatTime(order.created_at)}
-                  </p>
-                  <p className="font-bold text-[15px] text-ink mt-0.5">{order.customer_identifier}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-fraunces font-bold text-[18px] text-ink">
-                    ₦{order.total.toLocaleString()}
-                  </p>
-                  <div className="flex justify-end mt-1">
-                    <Badge variant={order.status} />
+        {!loading &&
+          !error &&
+          filteredOrders.map((order) => (
+            <a key={order.id} href={`/vendor/orders/${order.id}`}>
+              <div className="bg-white rounded-2xl p-4 shadow-card active:scale-[0.98] transition-transform">
+                {/* Top row */}
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <p className="text-[11px] text-ink-light">
+                      #{order.id.slice(0, 8).toUpperCase()} · {formatTime(order.created_at)}
+                    </p>
+                    <p className="font-bold text-[15px] text-ink mt-0.5">
+                      {order.customer_identifier}
+                    </p>
+                  </div>
+                  <div className="text-right flex items-start gap-2">
+                    <p className="font-fraunces font-bold text-[18px] text-ink">
+                      ₦{order.total.toLocaleString()}
+                    </p>
+                    <div className="flex justify-end mt-1">
+                      <Badge variant={order.status} />
+                    </div>
+                    <div className="ml-2">
+                      <OrderChat vendorId={order.vendor_id} customer={order.customer_identifier} />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Items */}
-              <div className="bg-cream rounded-xl px-3 py-2.5 mb-3 space-y-1">
-                {(order.items || []).slice(0, 3).map((item) => (
-                  <div key={item.id} className="flex justify-between text-[13px] text-ink-mid">
-                    <span>{item.quantity}× {item.product_name}</span>
-                    <span>₦{Number(item.unit_price * item.quantity).toLocaleString()}</span>
-                  </div>
-                ))}
-                {(order.items || []).length > 3 && (
-                  <div className="text-xs text-ink-light">+ {(order.items || []).length - 3} more item(s)</div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[11px] text-ink-light">
-                  <div className="w-1.5 h-1.5 bg-[#25D366] rounded-full" />
-                  via {order.channel === 'sim_chat' ? 'Storefront' : order.channel}
+                {/* Items */}
+                <div className="bg-cream rounded-xl px-3 py-2.5 mb-3 space-y-1">
+                  {(order.items || []).slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex justify-between text-[13px] text-ink-mid">
+                      <span>
+                        {item.quantity}× {item.product_name}
+                      </span>
+                      <span>₦{Number(item.unit_price * item.quantity).toLocaleString()}</span>
+                    </div>
+                  ))}
+                  {(order.items || []).length > 3 && (
+                    <div className="text-xs text-ink-light">
+                      + {(order.items || []).length - 3} more item(s)
+                    </div>
+                  )}
                 </div>
-                <span className={cn('text-xs font-bold', STATUS_FOOTER[order.status])}>
-                  {STATUS_FOOTER_TEXT[order.status]}
-                </span>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] text-ink-light">
+                    <div className="w-1.5 h-1.5 bg-[#25D366] rounded-full" />
+                    via {order.channel === 'sim_chat' ? 'Storefront' : order.channel}
+                  </div>
+                  <span className={cn('text-xs font-bold', STATUS_FOOTER[order.status])}>
+                    {STATUS_FOOTER_TEXT[order.status]}
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        ))}
+            </a>
+          ))}
 
         {loading && (
           <div className="bg-white rounded-2xl p-5 text-sm text-ink-light text-center shadow-card">

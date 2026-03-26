@@ -74,8 +74,20 @@ export async function POST(req: NextRequest) {
     );
 
     await supabase.from('messages').insert([
-      { vendor_id: vendorId, sender: 'customer', channel, content: message.text || '' },
-      { vendor_id: vendorId, sender: 'ai', channel, content: confirmationText },
+      {
+        vendor_id: vendorId,
+        sender: 'customer',
+        channel,
+        content: message.text || '',
+        customer_identifier: message.senderId,
+      },
+      {
+        vendor_id: vendorId,
+        sender: 'ai',
+        channel,
+        content: confirmationText,
+        customer_identifier: message.senderId,
+      },
     ]);
 
     const reply = adapter.formatReply({ text: confirmationText, paymentUrl: payment.paymentUrl });

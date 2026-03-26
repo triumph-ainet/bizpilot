@@ -59,9 +59,10 @@ export interface Payment {
 export interface Message {
   id: string;
   vendor_id: string;
-  sender: 'customer' | 'ai';
+  sender: 'customer' | 'ai' | 'vendor' | 'system';
   channel: Channel;
   content: string;
+  customer_identifier?: string;
   created_at: string;
 }
 
