@@ -86,6 +86,7 @@ export default function SettingsPage() {
           label: 'Store Link',
           value: `${window.location.origin}/${settings.storeSlug}`,
           editable: false,
+          copyable: true,
         },
       ],
     },

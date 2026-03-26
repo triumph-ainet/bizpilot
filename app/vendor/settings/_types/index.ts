@@ -35,4 +35,5 @@ export interface SettingsItem {
   editable: boolean;
   isBankDetails?: boolean;
   isPassword?: boolean;
+  copyable?: boolean;
 }

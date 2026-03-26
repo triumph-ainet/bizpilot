@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { SettingsItem, EditingState, VendorSettings } from '../_types';
 
 type Props = {
@@ -29,6 +30,18 @@ export default function SettingsSections({
   onSave,
   onCancel,
 }: Props) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = async (id: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1800);
+    } catch (e) {
+      // fallback: do nothing if clipboard unavailable
+    }
+  };
+
   return (
     <>
       {sections.map((section, si) => (
@@ -111,8 +124,19 @@ export default function SettingsSections({
                 </div>
               ) : (
                 <div
-                  onClick={() => item.editable && onFieldClick(item.id, item.value)}
-                  className={`flex items-center gap-3.5 px-4 py-4 ${ii < section.items.length - 1 ? 'border-b border-cream-dark' : ''} ${item.editable ? 'cursor-pointer hover:bg-cream' : ''} transition-colors`}
+                  onClick={() => {
+                    if (item.editable) return onFieldClick(item.id, item.value);
+                    if (item.copyable) return handleCopy(item.id, item.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      if (item.editable) onFieldClick(item.id, item.value);
+                      else if (item.copyable) handleCopy(item.id, item.value);
+                    }
+                  }}
+                  role={item.editable || item.copyable ? 'button' : undefined}
+                  tabIndex={item.editable || item.copyable ? 0 : -1}
+                  className={`flex items-center gap-3.5 px-4 py-4 ${ii < section.items.length - 1 ? 'border-b border-cream-dark' : ''} ${item.editable || item.copyable ? 'cursor-pointer hover:bg-cream' : ''} transition-colors`}
                 >
                   <div
                     className={`w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center text-lg flex-shrink-0`}
@@ -122,7 +146,9 @@ export default function SettingsSections({
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-ink">{item.label}</p>
                     {item.value && (
-                      <p className="text-xs text-ink-light mt-0.5 truncate">{item.value}</p>
+                      <p className="text-xs text-ink-light mt-0.5 truncate">
+                        {copiedId === item.id ? 'Copied!' : item.value}
+                      </p>
                     )}
                   </div>
                   {item.editable && <span className="text-ink-light text-xl">›</span>}
