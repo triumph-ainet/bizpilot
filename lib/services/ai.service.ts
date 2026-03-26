@@ -52,11 +52,12 @@ export async function extractProductFromImage(
 export async function generateOrderConfirmation(
   items: { name: string; quantity: number; price: number }[],
   total: number,
-  paymentUrl: string
+  paymentUrl: string,
+  invoiceNumber?: string | null
 ): Promise<string> {
   const model = genai.getGenerativeModel({
     model: MODEL,
-    systemInstruction: orderConfirmationPrompt(items, total, paymentUrl),
+    systemInstruction: orderConfirmationPrompt(items, total, paymentUrl, invoiceNumber),
   });
   const response = await model.generateContent('Generate the order confirmation.');
   return response.response.text() || `Order confirmed! Total: ₦${total}. Pay here: ${paymentUrl}`;

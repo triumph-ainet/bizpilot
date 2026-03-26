@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adapters } from '@/lib/adapters';
 import { parseOrder, generateOrderConfirmation } from '@/lib/services/ai.service';
 import { createOrder } from '@/lib/services/order.service';
+import { createInvoiceForOrder } from '@/lib/services/invoices.service';
 import { initializePayment } from '@/lib/services/payment.service';
 import { getVendorProducts } from '@/lib/services/inventory.service';
 import { createServerSupabase } from '@/lib/supabase';
@@ -50,6 +51,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { order, items } = await createOrder(parsed, normalizedMessage, catalog);
+    const invoice = await createInvoiceForOrder(order.id, order.total, items).catch(() => null);
+
     const payment = await initializePayment(
       order.id,
       order.total * 100, // convert to kobo
@@ -70,7 +73,8 @@ export async function POST(req: NextRequest) {
     const confirmationText = await generateOrderConfirmation(
       items.map((i) => ({ name: i.product_name, quantity: i.quantity, price: i.unit_price })),
       order.total,
-      payment.paymentUrl
+      payment.paymentUrl,
+      invoice?.invoice_number
     );
 
     await supabase.from('messages').insert([
@@ -98,6 +102,7 @@ export async function POST(req: NextRequest) {
         items: items.map((i) => ({ name: i.product_name, qty: i.quantity, price: i.unit_price })),
         total: order.total,
         paymentUrl: payment.paymentUrl,
+        invoiceNumber: invoice?.invoice_number || null,
       },
     });
   } catch (error) {

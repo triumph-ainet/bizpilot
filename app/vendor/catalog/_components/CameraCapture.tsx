@@ -51,13 +51,7 @@ export default function CameraCapture({
 
   return (
     <div className="w-full h-44 bg-white rounded-2xl overflow-hidden shadow-card flex flex-col">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full object-cover flex-1"
-      />
+      <video ref={videoRef} autoPlay playsInline muted className="w-full object-cover flex-1" />
       <div className="p-2 flex justify-center bg-white/80">
         <button
           onClick={handleCapture}

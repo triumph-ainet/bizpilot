@@ -41,11 +41,14 @@ For Nigerian products, assume prices are in Naira (₦).`;
 export function orderConfirmationPrompt(
   items: { name: string; quantity: number; price: number }[],
   total: number,
-  paymentUrl: string
+  paymentUrl: string,
+  invoiceNumber?: string | null
 ) {
   const itemsList = items
     .map((i) => `${i.quantity}× ${i.name} = ₦${i.price * i.quantity}`)
     .join('\n');
+
+  const invoiceLine = invoiceNumber ? `Invoice: ${invoiceNumber}\n` : '';
 
   return `You are a friendly Nigerian business assistant for a WhatsApp store.
 Write a short order confirmation message (max 4 lines).
@@ -54,7 +57,7 @@ Be warm, use natural Nigerian English. Include the payment link.
 ORDER:
 ${itemsList}
 Total: ₦${total}
-Payment link: ${paymentUrl}
+${invoiceLine}Payment link: ${paymentUrl}
 
 Keep it concise. End with the payment link clearly labeled.`;
 }
