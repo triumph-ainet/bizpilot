@@ -21,49 +21,56 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServerSupabase();
-    const { data: payment } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('interswitch_reference', payload.txnref)
-      .single();
 
-    if (!payment) {
-      console.warn('[webhook] Payment record not found', payload.txnref);
+    // Use a DB-side transactional function to process payment atomically
+    const { data: procResult, error: procErr } = await supabase.rpc('process_payment', {
+      txnref: payload.txnref,
+    });
+
+    if (procErr) {
+      console.error('[webhook] process_payment rpc failed', procErr);
+      return NextResponse.json({ received: true, status: 'rpc_error' }, { status: 500 });
+    }
+
+    const result = procResult as any;
+    if (!result || result.status === 'no_payment') {
       return NextResponse.json({ received: true, status: 'no_payment_record' });
     }
 
-    // If payment already processed, short-circuit to avoid double-processing
-    if (payment.status === 'confirmed') {
+    if (result.status === 'already_processed') {
       return NextResponse.json({ received: true, status: 'already_processed' });
     }
 
-    const order = await markOrderPaid(payload.txnref);
+    const order = result.order as any;
+    const items = result.items as any[] | null;
 
-    // Decrement inventory for the items (should only run once due to idempotency guard)
-    await decrementBatch(order.items);
+    const lowStockProducts = items ? items.filter((it: any) => Number(it.quantity) > 0) : [];
 
-    const lowStockProducts = await checkLowStock(order.vendor_id);
-    const receipt = await generateReceipt(order.customer_identifier, order.total, payload.txnref);
-    const supabase = createServerSupabase();
-    await supabase.from('messages').insert({
+    const receipt = await generateReceipt(
+      order.customer_identifier,
+      Number(order.total || 0),
+      payload.txnref
+    );
+    const supabase2 = createServerSupabase();
+    await supabase2.from('messages').insert({
       vendor_id: order.vendor_id,
       sender: 'ai',
       channel: order.channel,
       content: receipt,
     });
 
-    // 7. If low stock, create alert records
-    if (lowStockProducts.length > 0) {
-      await supabase.from('stock_alerts').upsert(
-        lowStockProducts.map((p) => ({
-          vendor_id: order.vendor_id,
-          product_id: p.id,
-          product_name: p.name,
-          quantity: p.quantity,
-          threshold: p.low_stock_threshold,
-        })),
-        { onConflict: 'product_id' }
-      );
+    // Try to send email if customer_identifier looks like an email
+    try {
+      if (order.customer_identifier && order.customer_identifier.includes('@')) {
+        const { sendInvoiceEmail } = await import('@/lib/services/email.service');
+        await sendInvoiceEmail(
+          order.customer_identifier,
+          `Receipt - ${payload.txnref}`,
+          `<p>${receipt}</p>`
+        ).catch(() => null);
+      }
+    } catch (e) {
+      console.warn('Failed to send receipt email', e);
     }
 
     return NextResponse.json({
