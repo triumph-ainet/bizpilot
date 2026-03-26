@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, PencilLine, Sparkles, Check } from 'lucide-react';
+import { Camera, PencilLine, Sparkles, Check, Folder } from 'lucide-react';
+import CameraCapture from '../_components/CameraCapture';
 import { Button, Input, Spinner } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ export default function AddProductPage() {
   const [mode, setMode] = useState<'snap' | 'manual'>('snap');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -137,29 +139,89 @@ export default function AddProductPage() {
               className="hidden"
               onChange={handleImage}
             />
-            <div
-              onClick={() => fileRef.current?.click()}
-              className="relative w-full h-44 bg-white rounded-2xl overflow-hidden shadow-card flex items-center justify-center cursor-pointer"
-            >
-              {imagePreview ? (
-                <>
-                  <img src={imagePreview} alt="product" className="w-full h-full object-cover" />
-                  {extracting && (
-                    <div className="absolute inset-0 bg-green/60 flex items-end p-4">
-                      <div className="bg-white/95 rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-green">
-                        <Spinner className="w-3.5 h-3.5 border-t-green" />
-                        AI is reading your photo...
-                      </div>
+            {imagePreview ? (
+              <div className="relative w-full h-44 bg-white rounded-2xl overflow-hidden shadow-card flex items-center justify-center">
+                <img src={imagePreview} alt="product" className="w-full h-full object-cover" />
+                {extracting && (
+                  <div className="absolute inset-0 bg-green/60 flex items-end p-4">
+                    <div className="bg-white/95 rounded-xl px-3 py-2 flex items-center gap-2 text-sm font-semibold text-green">
+                      <Spinner className="w-3.5 h-3.5 border-t-green" />
+                      AI is reading your photo...
                     </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-ink-light">
-                  <Camera className="w-12 h-12" />
-                  <span className="text-sm font-medium">Tap to take a photo</span>
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Choice buttons: Camera or Upload */}
+                {!showCamera ? (
+                  <div className="w-full bg-white rounded-2xl p-4 flex flex-col gap-3 items-center shadow-card">
+                    <div className="w-full grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setShowCamera(true)}
+                        className="flex-1 bg-green text-white rounded-xl py-4 flex flex-col items-center justify-center gap-2 font-semibold"
+                      >
+                        <Camera className="w-5 h-5" />
+                        Use Camera
+                      </button>
+                      <button
+                        onClick={() => fileRef.current?.click()}
+                        className="flex-1 bg-white border border-ink-light rounded-xl py-4 flex flex-col items-center justify-center gap-2 font-semibold text-ink-light"
+                      >
+                        <Folder className="w-5 h-5" />
+                        Upload Photo
+                      </button>
+                    </div>
+                    <div className="text-sm text-ink-light">
+                      Tip: Camera works best for single product images.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <CameraCapture
+                      onCapture={(blob, dataUrl) => {
+                        setShowCamera(false);
+                        setImageFile(blob as File);
+                        setImagePreview(dataUrl);
+                        // trigger extraction using same logic as file input
+                        const reader = new FileReader();
+                        setExtracting(true);
+                        reader.onload = async () => {
+                          try {
+                            const res = await fetch('/api/products/extract', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                imageBase64: (reader.result as string).split(',')[1],
+                                mimeType: 'image/jpeg',
+                              }),
+                            });
+                            const data = await res.json();
+                            setForm((f) => ({
+                              ...f,
+                              name: data.name || '',
+                              price: data.estimated_price?.toString() || '',
+                              quantity: data.quantity?.toString() || '',
+                            }));
+                          } finally {
+                            setExtracting(false);
+                          }
+                        };
+                        reader.readAsDataURL(blob as Blob);
+                      }}
+                    />
+                    <div className="text-center mt-2">
+                      <button
+                        onClick={() => setShowCamera(false)}
+                        className="text-sm text-ink-light"
+                      >
+                        Switch to upload
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
 
