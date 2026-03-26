@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, PencilLine, Sparkles, Check } from 'lucide-react';
+import { Camera, PencilLine, Sparkles, Check, Folder } from 'lucide-react';
 import CameraCapture from '../_components/CameraCapture';
 import { Button, Input, Spinner } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
@@ -168,7 +168,7 @@ export default function AddProductPage() {
                         onClick={() => fileRef.current?.click()}
                         className="flex-1 bg-white border border-ink-light rounded-xl py-4 flex flex-col items-center justify-center gap-2 font-semibold text-ink-light"
                       >
-                        <span className="text-lg">📁</span>
+                        <span className="text-lg"><Folder className="w-5 h-5" /></span>
                         Upload Photo
                       </button>
                     </div>
@@ -180,7 +180,6 @@ export default function AddProductPage() {
                       setShowCamera(false);
                       setImageFile(blob as File);
                       setImagePreview(dataUrl);
-                      // trigger extraction using same logic as file input
                       const reader = new FileReader();
                       setExtracting(true);
                       reader.onload = async () => {

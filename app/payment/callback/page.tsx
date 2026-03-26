@@ -1,9 +1,16 @@
-import { useSearchParams } from 'next/navigation';
+export default function PaymentCallbackPage({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
+  const getParam = (key: string) => {
+    const val = searchParams[key];
+    if (Array.isArray(val)) return val[0] ?? '';
+    return val ?? '';
+  };
 
-export default function PaymentCallbackPage() {
-  const params = useSearchParams();
-  const txnref = params.get('txnref') || params.get('transactionreference') || '';
-  const resp = params.get('resp') || params.get('response') || '';
+  const txnref = getParam('txnref') || getParam('transactionreference') || '';
+  const resp = getParam('resp') || getParam('response') || '';
 
   const success = resp === '00';
 
