@@ -58,15 +58,13 @@ export default function ChatFloating({ vendorId }: { vendorId?: string }) {
   async function send() {
     if (!input.trim() || !vendorId) return;
     const customer_identifier = phone || `guest-${Date.now()}`;
-    await supabase
-      .from('messages')
-      .insert({
-        vendor_id: vendorId,
-        sender: 'customer',
-        channel: 'web_chat',
-        content: input,
-        customer_identifier,
-      });
+    await supabase.from('messages').insert({
+      vendor_id: vendorId,
+      sender: 'customer',
+      channel: 'web_chat',
+      content: input,
+      customer_identifier,
+    });
     setInput('');
     if (!mounted.current) return;
     setOpen(true);
@@ -85,11 +83,11 @@ export default function ChatFloating({ vendorId }: { vendorId?: string }) {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="p-3 flex-1 overflow-y-auto max-h-64 space-y-2">
+          <div className="p-3 flex-1 overflow-y-auto max-h-64 space-y-2 break-words">
             {messages.map((m) => (
               <div key={m.id} className={m.sender === 'customer' ? 'text-right' : 'text-left'}>
                 <div
-                  className={`inline-block px-3 py-2 rounded-xl ${m.sender === 'customer' ? 'bg-[#d9fdd3]' : 'bg-white'}`}
+                  className={`inline-block px-3 py-2 rounded-xl max-w-[80%] break-words whitespace-pre-wrap ${m.sender === 'customer' ? 'bg-[#d9fdd3]' : 'bg-white'}`}
                 >
                   {m.content}
                 </div>
@@ -99,23 +97,34 @@ export default function ChatFloating({ vendorId }: { vendorId?: string }) {
               </div>
             ))}
           </div>
-          <div className="p-3 bg-cream-dark flex gap-2">
+          <div className="p-3 bg-cream-dark flex flex-col gap-2">
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="WhatsApp number"
-              className="flex-1 px-3 py-2 rounded-lg"
+              className="w-full px-3 py-2 rounded-lg border border-ink-light bg-cream placeholder:italic placeholder:text-ink-light text-sm"
             />
-            <input
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Message..."
-              className="flex-1 px-3 py-2 rounded-lg"
-              onKeyDown={(e) => e.key === 'Enter' && send()}
+              placeholder="Write a message... (Shift+Enter for newline)"
+              className="w-full px-3 py-2 rounded-lg resize-none h-24 border border-ink-light bg-white placeholder:text-ink-light shadow-sm focus:outline-none focus:ring-2 focus:ring-green"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
             />
-            <button onClick={send} className="bg-green text-white px-3 py-2 rounded-lg">
-              Send
-            </button>
+            <div className="flex justify-end">
+              <button
+                onClick={send}
+                className="bg-green text-white px-4 py-2 rounded-lg shadow-md hover:brightness-90 transition"
+                aria-label="Send message"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       )}

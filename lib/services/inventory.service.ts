@@ -55,3 +55,34 @@ export async function getVendorProducts(vendorId: string): Promise<Product[]> {
 
   return data || [];
 }
+
+export async function updateProduct(
+  vendorId: string,
+  productId: string,
+  fields: Partial<
+    Pick<Product, 'name' | 'price' | 'quantity' | 'image_url' | 'low_stock_threshold'>
+  >
+): Promise<Product | null> {
+  const supabase = createServerSupabase();
+  const { data, error } = await supabase
+    .from('products')
+    .update(fields)
+    .eq('id', productId)
+    .eq('vendor_id', vendorId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data || null;
+}
+
+export async function deleteProduct(vendorId: string, productId: string): Promise<boolean> {
+  const supabase = createServerSupabase();
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId)
+    .eq('vendor_id', vendorId);
+  if (error) throw new Error(error.message);
+  return true;
+}

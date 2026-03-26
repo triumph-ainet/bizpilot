@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, PencilLine, Sparkles, Check, Folder } from 'lucide-react';
+import { Camera, PencilLine, Sparkles, Check } from 'lucide-react';
 import CameraCapture from '../_components/CameraCapture';
 import { Button, Input, Spinner } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
@@ -168,55 +168,46 @@ export default function AddProductPage() {
                         onClick={() => fileRef.current?.click()}
                         className="flex-1 bg-white border border-ink-light rounded-xl py-4 flex flex-col items-center justify-center gap-2 font-semibold text-ink-light"
                       >
-                        <Folder className="w-5 h-5" />
+                        <span className="text-lg">📁</span>
                         Upload Photo
                       </button>
                     </div>
-                    <div className="text-sm text-ink-light">
-                      Tip: Camera works best for single product images.
-                    </div>
+                    <div className="text-sm text-ink-light">Tip: Camera works best for single product images.</div>
                   </div>
                 ) : (
                   <div className="w-full">
-                    <CameraCapture
-                      onCapture={(blob, dataUrl) => {
-                        setShowCamera(false);
-                        setImageFile(blob as File);
-                        setImagePreview(dataUrl);
-                        // trigger extraction using same logic as file input
-                        const reader = new FileReader();
-                        setExtracting(true);
-                        reader.onload = async () => {
-                          try {
-                            const res = await fetch('/api/products/extract', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                imageBase64: (reader.result as string).split(',')[1],
-                                mimeType: 'image/jpeg',
-                              }),
-                            });
-                            const data = await res.json();
-                            setForm((f) => ({
-                              ...f,
-                              name: data.name || '',
-                              price: data.estimated_price?.toString() || '',
-                              quantity: data.quantity?.toString() || '',
-                            }));
-                          } finally {
-                            setExtracting(false);
-                          }
-                        };
-                        reader.readAsDataURL(blob as Blob);
-                      }}
-                    />
+                    <CameraCapture onCapture={(blob, dataUrl) => {
+                      setShowCamera(false);
+                      setImageFile(blob as File);
+                      setImagePreview(dataUrl);
+                      // trigger extraction using same logic as file input
+                      const reader = new FileReader();
+                      setExtracting(true);
+                      reader.onload = async () => {
+                        try {
+                          const res = await fetch('/api/products/extract', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              imageBase64: (reader.result as string).split(',')[1],
+                              mimeType: 'image/jpeg',
+                            }),
+                          });
+                          const data = await res.json();
+                          setForm((f) => ({
+                            ...f,
+                            name: data.name || '',
+                            price: data.estimated_price?.toString() || '',
+                            quantity: data.quantity?.toString() || '',
+                          }));
+                        } finally {
+                          setExtracting(false);
+                        }
+                      };
+                      reader.readAsDataURL(blob as Blob);
+                    }} />
                     <div className="text-center mt-2">
-                      <button
-                        onClick={() => setShowCamera(false)}
-                        className="text-sm text-ink-light"
-                      >
-                        Switch to upload
-                      </button>
+                      <button onClick={() => setShowCamera(false)} className="text-sm text-ink-light">Switch to upload</button>
                     </div>
                   </div>
                 )}
