@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
+import ChatFloating from './_components/ChatFloating';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
   const { slug } = (React as any).use(params);
   const [storeName, setStoreName] = useState('Vendor Store');
+  const [vendorId, setVendorId] = useState<string | undefined>(undefined);
   const [storeReady, setStoreReady] = useState(false);
   const [storeError, setStoreError] = useState('');
   const [order, setOrder] = useState('');
@@ -24,6 +26,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Store not found');
         setStoreName(data.businessName || 'Vendor Store');
+        setVendorId(data.id);
         setStoreReady(true);
       } catch (err: unknown) {
         setStoreError(err instanceof Error ? err.message : 'Store not found');
@@ -174,7 +177,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
             </div>
           ))}
         </div>
-      </div>
+        </div>
+      
+      <ChatFloating vendorId={vendorId} />
     </div>
   );
 }
