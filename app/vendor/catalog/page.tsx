@@ -40,7 +40,8 @@ export default function CatalogPage() {
     return products.filter((p) => {
       if (term && !p.name.toLowerCase().includes(term)) return false;
       if (activeFilter === 'In Stock') return p.quantity > p.low_stock_threshold;
-      if (activeFilter === 'Low Stock') return p.quantity > 0 && p.quantity <= p.low_stock_threshold;
+      if (activeFilter === 'Low Stock')
+        return p.quantity > 0 && p.quantity <= p.low_stock_threshold;
       if (activeFilter === 'Out of Stock') return p.quantity <= 0;
       return true;
     });
@@ -48,7 +49,9 @@ export default function CatalogPage() {
 
   const counts = useMemo(() => {
     const outOfStock = products.filter((p) => p.quantity <= 0).length;
-    const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= p.low_stock_threshold).length;
+    const lowStock = products.filter(
+      (p) => p.quantity > 0 && p.quantity <= p.low_stock_threshold
+    ).length;
     const inStock = products.filter((p) => p.quantity > p.low_stock_threshold).length;
     return { all: products.length, inStock, lowStock, outOfStock };
   }, [products]);
@@ -105,29 +108,35 @@ export default function CatalogPage() {
 
         {/* Product grid */}
         <div className="grid grid-cols-2 gap-3">
-          {!loading && !error && filtered.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-card active:scale-95 transition-transform cursor-pointer"
-            >
-              <div className="h-24 flex items-center justify-center bg-emerald-50 overflow-hidden">
-                {product.image_url ? (
-                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-fraunces font-black text-2xl text-green-light">
-                    {product.name.slice(0, 1).toUpperCase()}
-                  </span>
-                )}
+          {!loading &&
+            !error &&
+            filtered.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-2xl overflow-hidden shadow-card active:scale-95 transition-transform cursor-pointer"
+              >
+                <div className="h-24 flex items-center justify-center bg-emerald-50 overflow-hidden">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-fraunces font-black text-2xl text-green-light">
+                      {product.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="p-3">
+                  <p className="font-bold text-[13px] text-ink leading-tight">{product.name}</p>
+                  <p className="font-fraunces font-bold text-[17px] text-green-light mt-1">
+                    ₦{Number(product.price).toLocaleString()}
+                  </p>
+                  <StockBar quantity={product.quantity} threshold={product.low_stock_threshold} />
+                </div>
               </div>
-              <div className="p-3">
-                <p className="font-bold text-[13px] text-ink leading-tight">{product.name}</p>
-                <p className="font-fraunces font-bold text-[17px] text-green-light mt-1">
-                  ₦{Number(product.price).toLocaleString()}
-                </p>
-                <StockBar quantity={product.quantity} threshold={product.low_stock_threshold} />
-              </div>
-            </div>
-          ))}
+            ))}
 
           {!loading && !error && filtered.length === 0 && (
             <div className="col-span-2 bg-white rounded-2xl p-6 text-center text-sm text-ink-light shadow-card">

@@ -56,7 +56,9 @@ export default function AddProductPage() {
       let imageUrl: string | undefined;
       if (imageFile) {
         const filePath = `product-images/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`;
-        const { error: uploadErr } = await supabase.storage.from('product-images').upload(filePath, imageFile, { upsert: true });
+        const { error: uploadErr } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, imageFile, { upsert: true });
         if (uploadErr) throw new Error(uploadErr.message);
 
         const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath);
