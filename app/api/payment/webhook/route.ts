@@ -20,7 +20,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, status: 'ignored' });
     }
 
+    const supabase = createServerSupabase();
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('interswitch_reference', payload.txnref)
+      .single();
+
+    if (!payment) {
+      console.warn('[webhook] Payment record not found', payload.txnref);
+      return NextResponse.json({ received: true, status: 'no_payment_record' });
+    }
+
+    // If payment already processed, short-circuit to avoid double-processing
+    if (payment.status === 'confirmed') {
+      return NextResponse.json({ received: true, status: 'already_processed' });
+    }
+
     const order = await markOrderPaid(payload.txnref);
+
+    // Decrement inventory for the items (should only run once due to idempotency guard)
     await decrementBatch(order.items);
 
     const lowStockProducts = await checkLowStock(order.vendor_id);

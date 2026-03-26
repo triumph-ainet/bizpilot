@@ -55,30 +55,55 @@ export async function markOrderPaid(
   paymentReference: string
 ): Promise<Order & { items: OrderItem[] }> {
   const supabase = createServerSupabase();
-
+  // Find payment and ensure we only process once
   const { data: payment } = await supabase
     .from('payments')
-    .select('order_id')
+    .select('*')
     .eq('interswitch_reference', paymentReference)
     .single();
 
   if (!payment) throw new Error('Payment not found');
 
+  // If payment already confirmed, return existing order + items (idempotent)
+  if (payment.status === 'confirmed') {
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', payment.order_id)
+      .single();
+
+    const { data: existingItems } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', payment.order_id);
+
+    return { ...(existingOrder as Order), items: existingItems || [] };
+  }
+
+  // Mark payment as confirmed (only if not already) and update order status
+  const now = new Date().toISOString();
+  const { error: payErr } = await supabase
+    .from('payments')
+    .update({ status: 'confirmed', paid_at: now })
+    .eq('interswitch_reference', paymentReference)
+    .neq('status', 'confirmed');
+
+  if (payErr) throw new Error(payErr.message);
+
   const { data: order } = await supabase
     .from('orders')
     .update({ status: 'paid' })
     .eq('id', payment.order_id)
+    .neq('status', 'paid')
     .select()
     .single();
 
-  await supabase
-    .from('payments')
-    .update({ status: 'confirmed', paid_at: new Date().toISOString() })
-    .eq('interswitch_reference', paymentReference);
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('*')
+    .eq('order_id', payment.order_id);
 
-  const { data: items } = await supabase.from('order_items').select('*').eq('order_id', order.id);
-
-  return { ...order, items: items || [] };
+  return { ...(order as Order), items: items || [] };
 }
 
 export async function getVendorOrders(vendorId: string, status?: string): Promise<Order[]> {
