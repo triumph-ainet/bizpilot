@@ -6,7 +6,12 @@ export async function fetchDashboardData(vendorId: string) {
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const [ordersRes, productsRes, prevOrdersRes] = await Promise.all([
+  const [vendorRes, ordersRes, productsRes, prevOrdersRes] = await Promise.all([
+    supabase
+      .from('vendors')
+      .select('business_name')
+      .eq('id', vendorId)
+      .single(),
     supabase
       .from('orders')
       .select('*, order_items(*)')
@@ -22,6 +27,7 @@ export async function fetchDashboardData(vendorId: string) {
       .lt('created_at', today),
   ]);
 
+  const vendor = vendorRes.data?.business_name || 'Your store';  
   const orders = ordersRes.data || [];
   const products = productsRes.data || [];
   const prevOrders = prevOrdersRes.data || [];
@@ -35,6 +41,7 @@ export async function fetchDashboardData(vendorId: string) {
   const revenueChange = prevRevenue === 0 ? (todayRevenue === 0 ? 0 : 100) : Math.round(((todayRevenue - prevRevenue) / prevRevenue) * 100);
 
   return {
+    vendor,
     stats: {
       todayRevenue,
       todayOrders: orders.length,
@@ -48,6 +55,7 @@ export async function fetchDashboardData(vendorId: string) {
 }
 
 export const EMPTY_DASHBOARD = {
+  vendor: 'Your store',
   stats: {
     todayRevenue: 0,
     todayOrders: 0,

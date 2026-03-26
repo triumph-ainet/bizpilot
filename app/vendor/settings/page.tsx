@@ -84,7 +84,7 @@ export default function SettingsPage() {
           icon: <Link className="w-5 h-5 text-pink-700" />,
           bg: 'bg-pink-50',
           label: 'Store Link',
-          value: `${window.location.origin}/${settings.storeSlug}`,
+          value: `${window.location.origin}/store/${settings.storeSlug}`,
           editable: false,
           copyable: true,
         },

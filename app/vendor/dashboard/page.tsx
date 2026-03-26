@@ -17,15 +17,19 @@ export default async function DashboardPage() {
     data = EMPTY_DASHBOARD;
   }
 
-  const { stats, recentOrders, lowStockProducts } = data;
-  const initials = (id: string) => (id ? id.replace('+234', '').slice(-4, -2).toUpperCase() : 'CU');
-  const vendorName = 'Your store';
+  const { vendor, stats, recentOrders, lowStockProducts } = data;
+  const initials = vendor
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-cream pb-24">
       <DashboardHeader
-        vendorName={vendorName}
-        initials={initials(session?.phone || '')}
+        vendorName={vendor}
+        initials={initials}
         todayRevenue={stats.todayRevenue}
         revenueChange={stats.revenueChange}
       />
@@ -37,7 +41,7 @@ export default async function DashboardPage() {
           products={lowStockProducts as Array<{ id: string; name: string; quantity: number }>}
         />
 
-        <RecentOrders orders={recentOrders as any[]} initialsFor={initials} />
+        <RecentOrders orders={recentOrders as any[]} initialsFor={() => initials} />
       </div>
 
       <BottomNav active="/vendor/dashboard" />
