@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, PencilLine, Sparkles, Check } from 'lucide-react';
 import { Button, Input, Spinner } from '@/components/ui';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 export default function AddProductPage() {
@@ -11,6 +12,7 @@ export default function AddProductPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<'snap' | 'manual'>('snap');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -20,6 +22,7 @@ export default function AddProductPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
     setExtracting(true);
     const reader = new FileReader();
     reader.onload = async () => {
@@ -50,6 +53,15 @@ export default function AddProductPage() {
     setSaving(true);
     setError('');
     try {
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        const filePath = `product-images/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`;
+        const { error: uploadErr } = await supabase.storage.from('product-images').upload(filePath, imageFile, { upsert: true });
+        if (uploadErr) throw new Error(uploadErr.message);
+
+        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(filePath);
+        imageUrl = (urlData as any)?.publicUrl || (urlData as any)?.publicUrl || '';
+      }
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,6 +70,7 @@ export default function AddProductPage() {
           price: Number(form.price),
           quantity: Number(form.quantity),
           low_stock_threshold: Number(form.threshold),
+          image_url: imageUrl,
         }),
       });
 

@@ -110,10 +110,14 @@ export default function CatalogPage() {
               key={product.id}
               className="bg-white rounded-2xl overflow-hidden shadow-card active:scale-95 transition-transform cursor-pointer"
             >
-              <div className="h-24 flex items-center justify-center bg-emerald-50">
-                <span className="font-fraunces font-black text-2xl text-green-light">
-                  {product.name.slice(0, 1).toUpperCase()}
-                </span>
+              <div className="h-24 flex items-center justify-center bg-emerald-50 overflow-hidden">
+                {product.image_url ? (
+                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-fraunces font-black text-2xl text-green-light">
+                    {product.name.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
               </div>
               <div className="p-3">
                 <p className="font-bold text-[13px] text-ink leading-tight">{product.name}</p>
