@@ -117,3 +117,15 @@ export interface DashboardStats {
   lowStockCount: number;
   revenueChange: number;
 }
+
+export interface Invoice {
+  id: string;
+  order_id: string;
+  invoice_number: string;
+  status: 'pending' | 'paid' | 'cancelled';
+  amount: number;
+  due_at: string | null;
+  items: Record<string, any> | null;
+  pdf_url: string | null;
+  created_at: string;
+}

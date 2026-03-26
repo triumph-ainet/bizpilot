@@ -56,7 +56,7 @@ export default function CameraCapture({
         autoPlay
         playsInline
         muted
-        className="w-full h-full object-cover flex-1"
+        className="w-full object-cover flex-1"
       />
       <div className="p-2 flex justify-center bg-white/80">
         <button
