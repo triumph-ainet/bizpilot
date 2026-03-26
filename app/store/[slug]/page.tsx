@@ -16,6 +16,10 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const [catalogError, setCatalogError] = useState('');
 
   useEffect(() => {
     async function loadStore() {
@@ -80,6 +84,32 @@ export default function StorePage({ params }: { params: { slug: string } }) {
         <p className="text-white/55 text-sm mb-9">
           Lagos · Fast delivery · Orders processed automatically
         </p>
+
+        <div className="mb-6">
+          <button
+            onClick={async () => {
+              const willOpen = !isCatalogOpen;
+              setIsCatalogOpen(willOpen);
+              if (willOpen && products.length === 0) {
+                setLoadingCatalog(true);
+                setCatalogError('');
+                try {
+                  const res = await fetch(`/api/store/${slug}/products`, { cache: 'no-store' });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Failed to load catalog');
+                  setProducts(data || []);
+                } catch (err: unknown) {
+                  setCatalogError(err instanceof Error ? err.message : 'Failed to load catalog');
+                } finally {
+                  setLoadingCatalog(false);
+                }
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-white/15 transition"
+          >
+            Show Catalog
+          </button>
+        </div>
 
         {!storeReady && !storeError && (
           <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white/80 text-sm mb-5">
