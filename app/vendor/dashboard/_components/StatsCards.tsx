@@ -13,14 +13,14 @@ export default function StatsCards({ stats }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2.5">
+    <div className="grid grid-cols-3 gap-4">
       {items.map((s) => (
-        <Card key={s.label} className="p-3.5">
-          <div className="mb-2 text-ink-mid">{s.icon}</div>
-          <div className={`font-fraunces text-[22px] font-black ${s.red ? 'text-red-500' : 'text-ink'}`}>
+        <Card key={s.label} className="p-6 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200">
+          <div className={`mb-3 inline-flex p-2 rounded-lg ${s.red ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-ink-mid'}`}>{s.icon}</div>
+          <div className={`font-fraunces text-3xl font-semibold ${s.red ? 'text-red-600' : 'text-ink'}`}>
             {s.val}
           </div>
-          <div className="text-[11px] text-ink-light mt-0.5">{s.label}</div>
+          <div className="text-xs text-ink-light mt-2 font-medium">{s.label}</div>
         </Card>
       ))}
     </div>
