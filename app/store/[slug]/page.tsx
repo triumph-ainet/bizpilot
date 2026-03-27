@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 import ChatFloating from './_components/ChatFloating';
+import ShareModal from './_components/ShareModal';
 import SessionConfirmation from './_components/SessionConfirmation';
 import SuggestionsWidget from '../../components/SuggestionsWidget';
 import FeedbackWidget from '../../components/FeedbackWidget';

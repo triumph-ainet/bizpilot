@@ -65,6 +65,19 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
     };
   }, [open, vendorId, customer]);
 
+useEffect(() => {
+   (async () => {
+          try {
+            await fetch('/api/chat/read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ vendorId, customer }),
+            });
+            setUnread(0);
+          } catch {}
+        })()
+}, [open])
+
   useEffect(() => {
     if (!open) return;
     let mounted = true;
@@ -118,19 +131,6 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
           <span className="absolute -top-1 -right-1 bg-green text-white text-[10px] px-1 rounded-full">{unread}</span>
         )}
       </button>
-
-      {/* mark read when opened */}
-      {open &&
-        (async () => {
-          try {
-            await fetch('/api/chat/read', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ vendorId, customer }),
-            });
-            setUnread(0);
-          } catch {}
-        })()}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
