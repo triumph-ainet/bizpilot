@@ -77,7 +77,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     setLoadingCatalog(true);
     setCatalogError('');
     try {
-      const res = await fetch(`/api/store/${slug}/products?page=${pageToLoad}&limit=${limit}`, { cache: 'no-store' });
+      const res = await fetch(`/api/store/${slug}/products?page=${pageToLoad}&limit=${limit}`, {
+        cache: 'no-store',
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load catalog');
       setProducts(data.products || []);
@@ -151,7 +153,12 @@ export default function StorePage({ params }: { params: { slug: string } }) {
             {sessionUrl && (
               <div className="mt-4 text-sm text-ink-light">
                 <p className="break-words">You can resume your order here:</p>
-                <a href={sessionUrl} className="text-green break-all" target="_blank" rel="noreferrer">
+                <a
+                  href={sessionUrl}
+                  className="text-green break-all"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {sessionUrl}
                 </a>
 
@@ -261,55 +268,80 @@ export default function StorePage({ params }: { params: { slug: string } }) {
             </div>
           ))}
         </div>
-        </div>
+      </div>
 
-        {isCatalogOpen && (
-          <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-4 text-white/90 max-w-4xl">
-            {loadingCatalog ? (
-              <div className="text-sm">Loading catalog...</div>
-            ) : catalogError ? (
-              <div className="text-sm text-red-400">{catalogError}</div>
-            ) : products.length === 0 ? (
-              <div className="text-sm">No products found.</div>
-            ) : (
-              <div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {products.map((p) => (
-                    <div key={p.id} className="bg-white/6 rounded-xl p-3 flex flex-col">
-                      <div className="h-28 mb-3 bg-white/5 rounded-md overflow-hidden flex items-center justify-center">
-                        {p.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.image_url} alt={p.name} className="object-cover w-full h-full" />
-                        ) : (
-                          <div className="text-xs text-white/60">No image</div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold text-white/95">{p.name}</div>
-                        <div className="text-xs text-white/60">₦{p.price}</div>
-                        <div className="text-xs text-white/60">Qty: {p.quantity}</div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <Button variant="amber" size="sm" onClick={() => addToOrder(p)} disabled={p.quantity <= 0}>
-                          Add
-                        </Button>
-                        <div className="text-xs text-white/70">{p.quantity <= 0 ? 'Out of stock' : ''}</div>
+      {isCatalogOpen && (
+        <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-4 text-white/90 max-w-4xl">
+          {loadingCatalog ? (
+            <div className="text-sm">Loading catalog...</div>
+          ) : catalogError ? (
+            <div className="text-sm text-red-400">{catalogError}</div>
+          ) : products.length === 0 ? (
+            <div className="text-sm">No products found.</div>
+          ) : (
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {products.map((p) => (
+                  <div key={p.id} className="bg-white/6 rounded-xl p-3 flex flex-col">
+                    <div className="h-28 mb-3 bg-white/5 rounded-md overflow-hidden flex items-center justify-center">
+                      {p.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="text-xs text-white/60">No image</div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-white/95">{p.name}</div>
+                      <div className="text-xs text-white/60">₦{p.price}</div>
+                      <div className="text-xs text-white/60">Qty: {p.quantity}</div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <Button
+                        variant="amber"
+                        size="sm"
+                        onClick={() => addToOrder(p)}
+                        disabled={p.quantity <= 0}
+                      >
+                        Add
+                      </Button>
+                      <div className="text-xs text-white/70">
+                        {p.quantity <= 0 ? 'Out of stock' : ''}
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 flex items-center justify-between text-sm text-white/75">
-                  <div>Showing {Math.min(page * limit, totalCount)} of {totalCount}</div>
-                  <div className="flex gap-2">
-                    <button onClick={() => loadCatalog(page - 1)} disabled={page <= 1} className="px-3 py-1 bg-white/10 rounded-lg text-sm">Prev</button>
-                    <button onClick={() => loadCatalog(page + 1)} disabled={page >= Math.ceil(totalCount / limit)} className="px-3 py-1 bg-white/10 rounded-lg text-sm">Next</button>
                   </div>
+                ))}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between text-sm text-white/75">
+                <div>
+                  Showing {Math.min(page * limit, totalCount)} of {totalCount}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadCatalog(page - 1)}
+                    disabled={page <= 1}
+                    className="px-3 py-1 bg-white/10 rounded-lg text-sm"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    onClick={() => loadCatalog(page + 1)}
+                    disabled={page >= Math.ceil(totalCount / limit)}
+                    className="px-3 py-1 bg-white/10 rounded-lg text-sm"
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
       <ChatFloating vendorId={vendorId} />
     </div>

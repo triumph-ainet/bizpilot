@@ -129,3 +129,13 @@ export interface Invoice {
   pdf_url: string | null;
   created_at: string;
 }
+
+export interface Feedback {
+  id: string;
+  vendor_id: string;
+  order_id?: string | null;
+  customer_identifier?: string | null;
+  rating?: number | null;
+  comment?: string | null;
+  created_at: string;
+}
