@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const vendorId = params.id;
+    const { id: vendorId } = await context.params;
     const supabase = createServerSupabase();
     const { data, error } = await supabase
       .from('feedbacks')

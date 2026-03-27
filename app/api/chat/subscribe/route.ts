@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const subject = 'Chat notifications enabled';
     const html = `<p>You will receive email notifications for new messages for chat with ${customer}.</p>`;
     try {
-      await sendNotificationEmail(email, subject, html);
+      await sendNotificationEmail(email, subject, html, vendorId, customer);
     } catch (e) {
       // swallow but continue
       console.warn('Notification send failed', e);
