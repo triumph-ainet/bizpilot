@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BottomNav } from '@/components/ui';
 
-type Contact = { customer: string; lastMessage?: string; lastAt?: string };
+type Contact = { customer: string; lastMessage?: string; lastAt?: string; unread?: number };
 
 export default function ChatPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -28,11 +28,20 @@ export default function ChatPage() {
                   {c.customer.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <div className="flex justify-between">
-                    <p className="font-bold text-ink">{c.customer}</p>
-                    <p className="text-xs text-ink-light">{c.lastAt ? new Date(c.lastAt).toLocaleString() : ''}</p>
+                  <div className="flex justify-between items-center gap-3">
+                    <div>
+                      <p className="font-bold text-ink">{c.customer}</p>
+                      <p className="text-sm text-ink-light mt-1 truncate w-[260px]">{c.lastMessage}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-ink-light">{c.lastAt ? new Date(c.lastAt).toLocaleString() : ''}</p>
+                      {c.unread ? (
+                        <div className="mt-2 ml-auto inline-flex items-center justify-center bg-green text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {c.unread}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                  <p className="text-sm text-ink-light mt-1">{c.lastMessage}</p>
                 </div>
               </div>
             </div>
