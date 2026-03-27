@@ -57,6 +57,16 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
         customer_identifier: customer,
       });
     setInput('');
+    // notify any subscribed emails for this customer
+    try {
+      fetch('/api/messages/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendorId, customer, message: input }),
+      });
+    } catch (e) {
+      console.warn('notify failed', e);
+    }
   }
 
   return (
