@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
-import { sendNotificationEmail } from '@/lib/services/email.service';
+import { sendNotificationEmail, buildNotificationHtml } from '@/lib/services/email.service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,6 +10,9 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServerSupabase();
+
+    const { data: vendor } = await supabase.from('vendors').select('id, store_name, contact_email').eq('id', vendorId).single();
+
     const { data } = await supabase
       .from('message_subscriptions')
       .select('email')
@@ -18,13 +21,11 @@ export async function POST(req: NextRequest) {
 
     const emails = (data || []).map((r: any) => r.email).filter(Boolean);
 
+    const html = buildNotificationHtml({ vendorName: vendor?.store_name || 'Vendor', customer, message, chatUrl: `${process.env.NEXT_PUBLIC_APP_URL}/chat/session/${vendorId}/${encodeURIComponent(customer)}` });
+
     await Promise.all(
       emails.map((to: string) =>
-        sendNotificationEmail(
-          to,
-          `New message from ${vendorId}`,
-          `<p>You have a new message:</p><p>${message}</p>`
-        ).catch((e) => console.warn('email error', e))
+        sendNotificationEmail(to, vendor?.store_name || 'Vendor', customer, message, html).catch((e) => console.warn('email error', e))
       )
     );
 
