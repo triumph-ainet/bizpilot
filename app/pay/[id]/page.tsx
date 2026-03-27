@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabase } from '@/lib/supabase';
+import CopyLinkClient from './CopyLinkClient';
 
 export default async function PayPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
@@ -34,22 +35,7 @@ export default async function PayPage({ params }: { params: { id: string } }) {
               Pay Now
             </a>
 
-            <div className="bg-slate-50 p-3 rounded border border-slate-200">
-              <p className="text-xs text-slate-500 mb-2">Or copy this payment link:</p>
-              <div className="flex gap-2">
-                <input
-                  readOnly
-                  value={paymentUrl}
-                  className="flex-1 rounded p-2 text-sm border border-slate-200 bg-white"
-                />
-                <button
-                  onClick={() => navigator.clipboard.writeText(paymentUrl)}
-                  className="px-3 py-2 bg-slate-200 rounded text-sm"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
+            <CopyLinkClient paymentUrl={paymentUrl} />
           </>
         ) : (
           <div className="text-sm text-amber-600">Payment link unavailable.</div>
