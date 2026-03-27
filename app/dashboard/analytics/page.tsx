@@ -6,6 +6,8 @@ import TopCustomer from './_components/TopCustomer';
 import Financials from './_components/Financials';
 import AIInsights from './_components/AIInsights';
 import IncomeChart from './_components/IncomeChart';
+import RechartsIncome from './_components/RechartsIncome';
+import RechartsTopProducts from './_components/RechartsTopProducts';
 import Link from 'next/link';
 import { generateProductSuggestions } from '@/lib/services/ai.service';
 import { Product } from '@/lib/types';
@@ -110,6 +112,10 @@ export default async function AnalyticsPage() {
     if (key in dayBuckets) dayBuckets[key] += Number(o.total || 0);
   }
   const series = Object.keys(dayBuckets).map((k) => ({ date: k, total: dayBuckets[k] }));
+  const topProducts = Object.values(counts)
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 6)
+    .map((p) => ({ name: p.name, qty: p.qty }));
 
   // CSV rows for export
   const csvRows = [
@@ -152,6 +158,11 @@ export default async function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <IncomeChart series={series} />
         <Financials inventoryValue={inventoryValue} cash={cash} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <RechartsIncome data={series} />
+        <RechartsTopProducts items={topProducts} />
       </div>
 
       <div className="mt-4">
