@@ -40,6 +40,13 @@ export async function fetchDashboardData(vendorId: string) {
 
   const revenueChange = prevRevenue === 0 ? (todayRevenue === 0 ? 0 : 100) : Math.round(((todayRevenue - prevRevenue) / prevRevenue) * 100);
 
+  const { data: feedbacks } = await supabase
+    .from('feedbacks')
+    .select('*')
+    .eq('vendor_id', vendorId)
+    .order('created_at', { ascending: false })
+    .limit(10)
+
   return {
     vendor,
     stats: {
@@ -51,6 +58,7 @@ export async function fetchDashboardData(vendorId: string) {
     } as DashboardStats,
     recentOrders: orders.slice(0, 5) as Order[],
     lowStockProducts: products.filter((p: any) => p.quantity <= p.low_stock_threshold),
+    feedbacks: feedbacks || [],
   };
 }
 
