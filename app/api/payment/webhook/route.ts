@@ -61,13 +61,27 @@ export async function POST(req: NextRequest) {
 
     // Try to send email if customer_identifier looks like an email
     try {
+      const { sendInvoiceEmail, buildReceiptHtml } = await import('@/lib/services/email.service');
+
+      // If customer_identifier is an email, send receipt there
       if (order.customer_identifier && order.customer_identifier.includes('@')) {
-        const { sendInvoiceEmail } = await import('@/lib/services/email.service');
-        await sendInvoiceEmail(
-          order.customer_identifier,
-          `Receipt - ${payload.txnref}`,
-          `<p>${receipt}</p>`
-        ).catch(() => null);
+        const html = buildReceiptHtml({ vendorName: order.store_name || 'Vendor', customer: order.customer_identifier, receiptText: receipt });
+        await sendInvoiceEmail(order.customer_identifier, `Receipt - ${payload.txnref}`, html).catch(() => null);
+      }
+
+      // Also look up any session tied to this order and email the session link if we have an email
+      const { data: session } = await supabase2
+        .from('sessions')
+        .select('*')
+        .eq('order_id', order.id)
+        .limit(1)
+        .single();
+
+      const sessionEmail = session?.customer_email || null;
+      if (sessionEmail) {
+        const sessionUrl = `${process.env.NEXT_PUBLIC_APP_URL}/session/${session.token}`;
+        const html = buildReceiptHtml({ vendorName: order.store_name || 'Vendor', customer: order.customer_identifier, receiptText: receipt, sessionUrl });
+        await sendInvoiceEmail(sessionEmail, `Your order is confirmed - ${payload.txnref}`, html).catch(() => null);
       }
     } catch (e) {
       console.warn('Failed to send receipt email', e);

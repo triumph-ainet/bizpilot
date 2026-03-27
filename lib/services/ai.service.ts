@@ -6,6 +6,7 @@ import {
   orderConfirmationPrompt,
   receiptPrompt,
   lowStockAlertPrompt,
+  orderSuggestionPrompt,
 } from '../prompts';
 
 const genai = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
@@ -89,4 +90,22 @@ export async function generateLowStockAlert(
   });
   const response = await model.generateContent('Generate stock alert.');
   return response.response.text() || `${productName} is running low (${currentQty} left).`;
+}
+
+export async function generateProductSuggestions(
+  intentText: string,
+  catalog: Product[],
+  maxSuggestions = 5
+): Promise<{ name: string; short_reason: string; estimated_price: number }[]> {
+  const model = genai.getGenerativeModel({
+    model: MODEL,
+    systemInstruction: orderSuggestionPrompt(intentText, catalog, maxSuggestions),
+  });
+  const response = await model.generateContent(`Suggest products for: ${intentText}`);
+  const raw = response.response.text();
+  try {
+    return JSON.parse(raw.replace(/```json|```/g, '').trim());
+  } catch (e) {
+    return [];
+  }
 }
