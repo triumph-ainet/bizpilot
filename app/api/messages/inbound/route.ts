@@ -96,8 +96,13 @@ export async function POST(req: NextRequest) {
 
     const reply = adapter.formatReply({ text: confirmationText, paymentUrl: payment.paymentUrl });
 
+    const chatUrl = `${process.env.NEXT_PUBLIC_APP_URL}/chat/session/${vendorId}/${encodeURIComponent(
+      message.senderId
+    )}`;
+
     return NextResponse.json({
       ...reply,
+      chatUrl,
       order: {
         items: items.map((i) => ({ name: i.product_name, qty: i.quantity, price: i.unit_price })),
         total: order.total,
