@@ -1,9 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle, Copy } from 'lucide-react';
+import { CheckCircle, Copy, Share2 } from 'lucide-react';
 
-export default function SessionConfirmation({ sessionUrl }: { sessionUrl: string }) {
+export default function SessionConfirmation({
+  sessionUrl,
+  onOpenShare,
+}: {
+  sessionUrl: string;
+  onOpenShare?: () => void;
+}) {
   const [copied, setCopied] = useState(false);
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
@@ -63,6 +69,9 @@ export default function SessionConfirmation({ sessionUrl }: { sessionUrl: string
             </a>
             <button onClick={copy} className="p-1 bg-white/5 rounded">
               <Copy className="w-4 h-4" />
+            </button>
+            <button onClick={onOpenShare} className="p-1 bg-white/5 rounded" aria-label="Share">
+              <Share2 className="w-4 h-4" />
             </button>
             {copied && <span className="text-[12px] text-green ml-2">Copied</span>}
           </div>

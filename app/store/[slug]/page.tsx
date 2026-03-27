@@ -18,6 +18,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   const [sent, setSent] = useState(false);
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
   const [emailForSession, setEmailForSession] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -151,7 +152,12 @@ export default function StorePage({ params }: { params: { slug: string } }) {
               We&apos;ve received your order and a payment link will be sent to your WhatsApp
               shortly.
             </p>
-            {sessionUrl && <SessionConfirmation sessionUrl={sessionUrl} />}
+            {sessionUrl && (
+              <>
+                <SessionConfirmation sessionUrl={sessionUrl} onOpenShare={() => setShowShareModal(true)} />
+                {showShareModal && <ShareModal sessionUrl={sessionUrl} onClose={() => setShowShareModal(false)} />}
+              </>
+            )}
             <button
               onClick={() => {
                 setSent(false);
