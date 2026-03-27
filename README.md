@@ -143,10 +143,6 @@ WhatsApp* ─────┘
 7. Order marked paid → inventory decremented → receipt generated
 ```
 
-**The vendor never touches the money.** It flows directly from customer → Interswitch → vendor's registered bank account. BizPilot is purely the payment initiator — it never holds funds.
-
-**Missed webhook recovery** — For any order stuck in `pending` for more than 10 minutes, query Interswitch's transaction requery endpoint to catch webhooks that failed to deliver.
-
 ---
 
 ## Deployment
@@ -183,8 +179,8 @@ After deploying:
 
 | Role                  | Responsibilities                                                                                         |
 | --------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Software Engineer** | All UI/UX pages, auth flows, vendor dashboard, CRUD API routes, Supabase schema, Vercel deployment       |
-| **AI Engineer**       | Gemini API integration, Interswitch payment service, channel adapters, TypeScript types, webhook handler |
+| **Software Engineer** [Fatih Azeez|(https://gitHub.com/devTiyah) All UI/UX pages, auth flows, vendor dashboard, CRUD API routes, Supabase schema, Vercel deployment       |
+| **AI Engineer**  [Emmanuel Lafenwa Lafenwa](https://gitHub.com/leoemaxie   | Gemini API integration, Interswitch payment service, channel adapters, TypeScript types, webhook handler |
 
 ---
 
