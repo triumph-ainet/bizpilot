@@ -1,4 +1,4 @@
-import ChatSessionClient from '../_components/ChatSessionClient';
+import ChatSessionClient from "../../_components/ChatSessionClient";
 
 export default function Page({ params }: { params: { vendor: string; customer: string } }) {
   const vendor = params.vendor;

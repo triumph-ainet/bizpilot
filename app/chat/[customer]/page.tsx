@@ -1,5 +1,5 @@
 import { getVendorSessionFromCookies } from '@/lib/auth';
-import ChatWindow from './_components/ChatWindowClient';
+import ChatWindow from '@/app/chat/_components/ChatWindowClient';
 
 export default async function Page({ params }: { params: { customer: string } }) {
   const session = await getVendorSessionFromCookies();

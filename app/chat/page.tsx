@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+"use client";
+
+import { useEffect, useState } from 'react';
 import { BottomNav } from '@/components/ui';
 
 type Contact = { customer: string; lastMessage?: string; lastAt?: string; unread?: number };
