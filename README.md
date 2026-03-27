@@ -181,6 +181,9 @@ After deploying:
 | --------------------- | -------------------------------------------------------------------------------------------------------- |
 | **Software Engineer** [Fatiha Azeez](https://gitHub.com/devTiyah) All UI/UX pages, auth flows, vendor dashboard, CRUD API routes, Supabase schema, Vercel deployment       |
 | **AI Engineer**  [Emmanuel Lafenwa](https://gitHub.com/leoemaxie)  | Gemini API integration, Interswitch payment service, channel adapters, TypeScript types, webhook handler |
+| **AI Engineer**  [Abdullahi Bello]  | Product Design |
+| **AI Engineer**  [Taiwo Amoo]  | Product Research |
+
 
 ---
 
