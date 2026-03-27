@@ -10,6 +10,26 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
+  const [unread, setUnread] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadUnread() {
+      try {
+        const res = await fetch('/api/chat/contacts');
+        if (!res.ok) return;
+        const data = await res.json();
+        const match = (data || []).find((c: any) => c.customer === customer);
+        if (mounted) setUnread(match?.unread || 0);
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadUnread();
+    return () => {
+      mounted = false;
+    };
+  }, [vendorId, customer]);
 
   useEffect(() => {
     if (!open) return;
@@ -45,6 +65,24 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
     };
   }, [open, vendorId, customer]);
 
+  useEffect(() => {
+    if (!open) return;
+    let mounted = true;
+    (async () => {
+      try {
+        await fetch('/api/chat/read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vendorId, customer }),
+        });
+        if (mounted) setUnread(0);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [open, vendorId, customer]);
+
   async function send() {
     if (!input.trim()) return;
     await supabase
@@ -71,9 +109,28 @@ export default function OrderChat({ vendorId, customer }: { vendorId: string; cu
 
   return (
     <div>
-      <button onClick={() => setOpen(true)} className="text-green">
+      <button
+        onClick={() => setOpen(true)}
+        className="relative text-green"
+      >
         <MessageSquare className="w-5 h-5" />
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 bg-green text-white text-[10px] px-1 rounded-full">{unread}</span>
+        )}
       </button>
+
+      {/* mark read when opened */}
+      {open &&
+        (async () => {
+          try {
+            await fetch('/api/chat/read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ vendorId, customer }),
+            });
+            setUnread(0);
+          } catch {}
+        })()}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4">

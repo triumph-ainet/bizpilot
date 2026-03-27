@@ -28,7 +28,37 @@ export async function sendInvoiceEmail(to: string, subject: string, html: string
   return res.json();
 }
 
-export async function sendNotificationEmail(to: string, subject: string, html: string) {
-  // Reuse the same MailerLite endpoint for simple notification emails
-  return sendInvoiceEmail(to, subject, html);
+export function buildNotificationHtml({
+  vendorName,
+  customer,
+  message,
+  chatUrl,
+}: {
+  vendorName: string;
+  customer: string;
+  message: string;
+  chatUrl?: string;
+}) {
+  return `
+  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial; color:#111;">
+    <h2 style="color:#0f766e;">New message from ${vendorName}</h2>
+    <p><strong>Chat:</strong> ${customer}</p>
+    <p style="white-space:pre-wrap;">${message}</p>
+    ${chatUrl ? `<p><a href="${chatUrl}">Open chat</a></p>` : ''}
+    <hr />
+    <p style="font-size:12px;color:#666;">You can reply via the web chat. Reply emails are not monitored.</p>
+  </div>
+  `;
+}
+
+export async function sendNotificationEmail(
+  to: string,
+  vendorName: string,
+  customer: string,
+  message: string,
+  html?: string
+) {
+  const subject = `New message from ${vendorName}`;
+  const body = html || buildNotificationHtml({ vendorName, customer, message });
+  return sendInvoiceEmail(to, subject, body);
 }
