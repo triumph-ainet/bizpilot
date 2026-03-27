@@ -27,3 +27,8 @@ export async function sendInvoiceEmail(to: string, subject: string, html: string
 
   return res.json();
 }
+
+export async function sendNotificationEmail(to: string, subject: string, html: string) {
+  // Reuse the same MailerLite endpoint for simple notification emails
+  return sendInvoiceEmail(to, subject, html);
+}
