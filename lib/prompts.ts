@@ -79,3 +79,21 @@ Threshold: ${threshold} units
 
 One sentence. Friendly but urgent. No emoji needed.`;
 }
+
+export function orderSuggestionPrompt(intentText: string, catalog: Product[], maxSuggestions = 5) {
+  const catalogList = catalog.map((p) => `- ${p.name} (₦${p.price})`).join('\n');
+
+  return `You are an assistant that suggests products from a vendor catalog based on customer intent.
+Customer intent: "${intentText}"
+
+CATALOG:
+${catalogList}
+
+RULES:
+- Suggest up to ${maxSuggestions} items that best match the customer's intent.
+- For each suggestion return name, short_reason and estimated_price (from the catalog price).
+- Return ONLY valid JSON array with no preamble or markdown.
+
+RESPONSE FORMAT:
+[ { "name": "catalog name", "short_reason": "why this fits", "estimated_price": 123 } ]`;
+}

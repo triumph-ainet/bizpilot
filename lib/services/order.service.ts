@@ -45,6 +45,35 @@ export async function createOrder(
 
   const { data: items } = await supabase.from('order_items').insert(itemsToInsert).select();
 
+  // If any requested quantity exceeds available inventory, create stock_alerts
+  for (const mi of matchedItems) {
+    try {
+      const { data: prod } = await supabase
+        .from('products')
+        .select('quantity')
+        .eq('id', mi.product.id)
+        .single();
+
+      const available = prod?.quantity ?? 0;
+      if (available <= 0 || mi.quantity > available) {
+        await supabase.from('stock_alerts').upsert(
+          {
+            vendor_id: mi.product.vendor_id,
+            product_id: mi.product.id,
+            product_name: mi.product.name,
+            quantity: available,
+            threshold: mi.product.low_stock_threshold,
+            resolved: false,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: 'product_id' }
+        );
+      }
+    } catch (e) {
+      // ignore inventory alert failures
+      console.warn('Failed to create stock alert', e);
+    }
+  }
   return {
     order,
     items: (items || []).map((item) => ({ ...item, price: item.unit_price })),
