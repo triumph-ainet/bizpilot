@@ -70,6 +70,22 @@ export async function POST(req: NextRequest) {
       status: 'pending',
     });
 
+    // Create a persistent session so customer can resume via a shareable link
+    const sessionInsert = await supabase
+      .from('sessions')
+      .insert({
+        vendor_id: vendorId,
+        order_id: order.id,
+        customer_identifier: message.senderId,
+        customer_email:
+          message.senderId && message.senderId.includes('@') ? message.senderId : null,
+        last_accessed: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    const sessionToken = sessionInsert?.data?.token || null;
+
     const confirmationText = await generateOrderConfirmation(
       items.map((i) => ({ name: i.product_name, quantity: i.quantity, price: i.unit_price })),
       order.total,
@@ -100,9 +116,14 @@ export async function POST(req: NextRequest) {
       message.senderId
     )}`;
 
+    const sessionUrl = sessionToken
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/session/${sessionToken}`
+      : null;
+
     return NextResponse.json({
       ...reply,
       chatUrl,
+      sessionUrl,
       order: {
         items: items.map((i) => ({ name: i.product_name, qty: i.quantity, price: i.unit_price })),
         total: order.total,
