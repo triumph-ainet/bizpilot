@@ -68,6 +68,17 @@ export async function createOrder(
           },
           { onConflict: 'product_id' }
         );
+        // notify vendor via messages table
+        try {
+          await supabase.from('messages').insert({
+            vendor_id: mi.product.vendor_id,
+            sender: 'system',
+            channel: 'sim_chat',
+            content: `Low stock: ${mi.product.name} — ${available} left. Please restock.`,
+          });
+        } catch (e) {
+          // ignore notify errors
+        }
       }
     } catch (e) {
       // ignore inventory alert failures

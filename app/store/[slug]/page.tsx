@@ -5,6 +5,8 @@ import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 import ChatFloating from './_components/ChatFloating';
 import SessionConfirmation from './_components/SessionConfirmation';
+import SuggestionsWidget from '../../components/SuggestionsWidget';
+import FeedbackWidget from '../../components/FeedbackWidget';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
   const { slug } = (React as any).use(params);
@@ -158,6 +160,12 @@ export default function StorePage({ params }: { params: { slug: string } }) {
                 {showShareModal && <ShareModal sessionUrl={sessionUrl} onClose={() => setShowShareModal(false)} />}
               </>
             )}
+
+            {vendorId && (
+              <div className="mt-6">
+                <FeedbackWidget vendorId={vendorId} orderId={null} customerIdentifier={`+234${phone}`} />
+              </div>
+            )}
             <button
               onClick={() => {
                 setSent(false);
@@ -180,6 +188,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
                   Just type what you want — our AI handles the rest. Payment link will be sent to
                   you instantly.
                 </p>
+                {vendorId && <div className="mt-3"><SuggestionsWidget vendorId={vendorId} /></div>}
               </div>
 
               <textarea
