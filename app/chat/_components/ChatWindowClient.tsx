@@ -22,6 +22,13 @@ export default function ChatWindow({ vendorId, customer }: { vendorId: string; c
         .order('created_at', { ascending: true });
       setMessages(data || []);
 
+      // mark as read
+      fetch('/api/chat/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendorId, customer }),
+      }).catch(() => {});
+
       channel = supabase
         .channel(`messages:${vendorId}:${customer}`)
         .on(

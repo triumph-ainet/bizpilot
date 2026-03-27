@@ -15,6 +15,8 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sessionUrl, setSessionUrl] = useState<string | null>(null);
+  const [emailForSession, setEmailForSession] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -63,6 +65,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
       if (!res.ok) throw new Error(data.error || 'Could not submit order');
 
       setSent(true);
+      setSessionUrl(data.sessionUrl || null);
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Could not submit order');
     } finally {
@@ -145,6 +148,43 @@ export default function StorePage({ params }: { params: { slug: string } }) {
               We&apos;ve received your order and a payment link will be sent to your WhatsApp
               shortly.
             </p>
+            {sessionUrl && (
+              <div className="mt-4 text-sm text-ink-light">
+                <p className="break-words">You can resume your order here:</p>
+                <a href={sessionUrl} className="text-green break-all" target="_blank" rel="noreferrer">
+                  {sessionUrl}
+                </a>
+
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <input
+                    value={emailForSession}
+                    onChange={(e) => setEmailForSession(e.target.value)}
+                    placeholder="Enter email to receive updates (optional)"
+                    className="px-3 py-2 rounded-lg border border-ink-light text-sm"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!sessionUrl) return;
+                      const token = sessionUrl.split('/').pop();
+                      if (!token || !emailForSession) return;
+                      try {
+                        await fetch(`/api/session/${token}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: emailForSession }),
+                        });
+                        setEmailForSession('');
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                    className="bg-green text-white px-3 py-2 rounded-lg text-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            )}
             <button
               onClick={() => {
                 setSent(false);
