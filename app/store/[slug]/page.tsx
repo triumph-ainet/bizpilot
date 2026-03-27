@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Lock, Zap, Shield, CheckCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 import ChatFloating from './_components/ChatFloating';
+import SessionConfirmation from './_components/SessionConfirmation';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
   const { slug } = (React as any).use(params);
@@ -150,48 +151,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
               We&apos;ve received your order and a payment link will be sent to your WhatsApp
               shortly.
             </p>
-            {sessionUrl && (
-              <div className="mt-4 text-sm text-ink-light">
-                <p className="break-words">You can resume your order here:</p>
-                <a
-                  href={sessionUrl}
-                  className="text-green break-all"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {sessionUrl}
-                </a>
-
-                <div className="mt-3 flex items-center justify-center gap-2">
-                  <input
-                    value={emailForSession}
-                    onChange={(e) => setEmailForSession(e.target.value)}
-                    placeholder="Enter email to receive updates (optional)"
-                    className="px-3 py-2 rounded-lg border border-ink-light text-sm"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!sessionUrl) return;
-                      const token = sessionUrl.split('/').pop();
-                      if (!token || !emailForSession) return;
-                      try {
-                        await fetch(`/api/session/${token}`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: emailForSession }),
-                        });
-                        setEmailForSession('');
-                      } catch {
-                        // ignore
-                      }
-                    }}
-                    className="bg-green text-white px-3 py-2 rounded-lg text-sm"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            )}
+            {sessionUrl && <SessionConfirmation sessionUrl={sessionUrl} />}
             <button
               onClick={() => {
                 setSent(false);
