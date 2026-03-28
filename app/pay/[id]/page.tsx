@@ -9,10 +9,12 @@ export default async function PayPage({ params }: { params: { id: string } }) {
     .select('*, orders(*)')
     .eq('order_id', params.id)
     .limit(1)
-    .single()
+    .single();
 
   const paymentRecord: any = payment || null;
-  const paymentUrl = paymentRecord?.interswitch_reference ? `${process.env.INTERSWITCH_BASE_URL}/collections/api/v1/pay?txnref=${paymentRecord.interswitch_reference}` : null;
+  const paymentUrl = paymentRecord?.interswitch_reference
+    ? `${process.env.INTERSWITCH_BASE_URL}/collections/api/v1/pay?txnref=${paymentRecord.interswitch_reference}`
+    : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
@@ -28,7 +30,7 @@ export default async function PayPage({ params }: { params: { id: string } }) {
           <>
             <a
               href={paymentUrl}
-              className="w-full inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center mb-3"
+              className="w-full inline-block text-white font-medium py-3 px-4 rounded-lg text-center mb-3 bg-[var(--color-green)] hover:bg-[var(--color-green-mid)]"
               target="_blank"
               rel="noreferrer"
             >
