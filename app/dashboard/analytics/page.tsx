@@ -9,6 +9,7 @@ import IncomeChart from './_components/IncomeChart';
 import RechartsIncome from './_components/RechartsIncome';
 import RechartsTopProducts from './_components/RechartsTopProducts';
 import Link from 'next/link';
+import ExportCsvButton from './_components/ExportCsvButton';
 import { generateProductSuggestions } from '@/lib/services/ai.service';
 import { Product } from '@/lib/types';
 
@@ -128,21 +129,7 @@ export default async function AnalyticsPage() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Analytics</h2>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              const csv = toCsv(csvRows);
-              const blob = new Blob([csv], { type: 'text/csv' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `analytics_${new Date().toISOString().slice(0,10)}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="px-3 py-2 bg-green text-white rounded-md text-sm"
-          >
-            Export CSV
-          </button>
+          <ExportCsvButton rows={csvRows} />
           <Link href="/dashboard/analytics/report" className="px-3 py-2 bg-white border rounded-md text-sm">
             Printable Report
           </Link>
