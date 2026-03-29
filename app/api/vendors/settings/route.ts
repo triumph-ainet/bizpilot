@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 import { getVendorSessionFromRequest } from '@/lib/auth';
+import { buildSettingsUpdatedHtml, sendInvoiceEmail } from '@/lib/services/email.service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -60,7 +61,8 @@ export async function PUT(req: NextRequest) {
       lowStockThreshold,
     } = body;
 
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
+    const changedFields = Object.keys(body).filter((key) => body[key] !== undefined);
 
     // Only allow updating specific fields
     if (businessName !== undefined) updates.business_name = businessName;
@@ -81,6 +83,24 @@ export async function PUT(req: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (changedFields.length > 0) {
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('business_name, email')
+        .eq('id', vendorId)
+        .single();
+
+      if (vendor?.email) {
+        const html = buildSettingsUpdatedHtml({
+          vendorName: vendor.business_name || 'Vendor',
+          changedFields,
+        });
+        await sendInvoiceEmail(vendor.email, 'Your settings were updated', html).catch((err) => {
+          console.warn('[vendors/settings] failed to send settings update email', err);
+        });
+      }
     }
 
     return NextResponse.json({ success: true, message: 'Settings updated successfully' });

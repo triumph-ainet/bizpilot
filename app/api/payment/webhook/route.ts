@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // Only process successful payments
     if (payload.resp !== '00') {
       return NextResponse.json({ received: true, status: 'ignored' });
     }
