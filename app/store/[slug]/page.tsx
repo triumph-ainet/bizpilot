@@ -125,6 +125,21 @@ export default function StorePage({ params }: { params: { slug: string } }) {
           </div>
         )}
 
+        {isCatalogOpen && (
+          <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-4 text-white/90 max-w-4xl">
+            <CatalogPanel
+              loadingCatalog={loadingCatalog}
+              catalogError={catalogError}
+              products={products}
+              page={page}
+              limit={limit}
+              totalCount={totalCount}
+              loadCatalog={loadCatalog}
+              addToOrder={addToOrder}
+            />
+          </div>
+        )}
+
         <OrderForm
           slug={slug}
           storeReady={storeReady}
@@ -157,21 +172,6 @@ export default function StorePage({ params }: { params: { slug: string } }) {
           ))}
         </div>
       </div>
-
-      {isCatalogOpen && (
-        <div className="mt-6 bg-white/5 border border-white/10 rounded-2xl p-4 text-white/90 max-w-4xl">
-          <CatalogPanel
-            loadingCatalog={loadingCatalog}
-            catalogError={catalogError}
-            products={products}
-            page={page}
-            limit={limit}
-            totalCount={totalCount}
-            loadCatalog={loadCatalog}
-            addToOrder={addToOrder}
-          />
-        </div>
-      )}
 
       <ChatFloating vendorId={vendorId} />
     </div>
