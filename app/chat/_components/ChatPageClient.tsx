@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import ChatWindow from "./ChatWindowClient";
+import React, { useEffect, useState } from 'react';
+import ChatWindow from './ChatWindowClient';
 
 type Contact = { customer: string; lastMessage?: string; lastAt?: string; unread?: number };
 
@@ -21,7 +21,7 @@ export default function ChatPageClient({
 
     async function load() {
       try {
-        const res = await fetch("/api/chat/contacts");
+        const res = await fetch('/api/chat/contacts');
         if (!res.ok) return;
         const data = await res.json();
         if (mounted) {
@@ -71,30 +71,42 @@ export default function ChatPageClient({
                 key={c.customer}
                 onClick={() => choose(c.customer)}
                 className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-cream/60 transition ${
-                  selected === c.customer ? "bg-cream/80" : ""
+                  selected === c.customer ? 'bg-cream/80' : ''
                 }`}
               >
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <div className="font-medium text-ink break-all">{c.customer}</div>
-                    <div className="text-xs text-ink-light">{c.lastAt ? new Date(c.lastAt).toLocaleTimeString() : ""}</div>
+                    <div className="text-xs text-ink-light">
+                      {c.lastAt ? new Date(c.lastAt).toLocaleTimeString() : ''}
+                    </div>
                   </div>
-                  <div className="text-sm text-ink-light truncate mt-1">{c.lastMessage}</div>
+                  <div className="text-sm text-ink-light mt-1">{c.lastMessage?.substring(0, 50)}...</div>
                 </div>
                 {c.unread ? (
-                  <div className="ml-2 bg-green text-white text-xs font-bold px-2 py-1 rounded-full">{c.unread}</div>
+                  <div className="ml-2 bg-green text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {c.unread}
+                  </div>
                 ) : null}
               </button>
             ))}
-            {contacts.length === 0 && <div className="p-4 text-sm text-ink-light">No chats yet</div>}
+            {contacts.length === 0 && (
+              <div className="p-4 text-sm text-ink-light">No chats yet</div>
+            )}
           </div>
         </aside>
 
         <main className="flex-1 bg-cream relative">
           {/* Mobile: contacts drawer */}
           {showContacts && (
-            <div className="md:hidden fixed inset-0 z-40 bg-black/30" onClick={() => setShowContacts(false)}>
-              <div className="absolute left-0 top-0 bottom-0 w-80 bg-white p-4" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="md:hidden fixed inset-0 z-40 bg-black/30"
+              onClick={() => setShowContacts(false)}
+            >
+              <div
+                className="absolute left-0 top-0 bottom-0 w-80 bg-white p-4"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-1 mb-3">
                   <input
                     placeholder="Search or start new chat"
@@ -107,18 +119,22 @@ export default function ChatPageClient({
                       key={c.customer}
                       onClick={() => choose(c.customer)}
                       className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-cream/60 transition ${
-                        selected === c.customer ? "bg-cream/80" : ""
+                        selected === c.customer ? 'bg-cream/80' : ''
                       }`}
                     >
                       <div className="flex-1">
                         <div className="flex justify-between items-center">
                           <div className="font-medium text-ink break-all">{c.customer}</div>
-                          <div className="text-xs text-ink-light">{c.lastAt ? new Date(c.lastAt).toLocaleTimeString() : ""}</div>
+                          <div className="text-xs text-ink-light">
+                            {c.lastAt ? new Date(c.lastAt).toLocaleTimeString() : ''}
+                          </div>
                         </div>
                         <div className="text-sm text-ink-light truncate mt-1">{c.lastMessage}</div>
                       </div>
                       {c.unread ? (
-                        <div className="ml-2 bg-green text-white text-xs font-bold px-2 py-1 rounded-full">{c.unread}</div>
+                        <div className="ml-2 bg-green text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {c.unread}
+                        </div>
                       ) : null}
                     </button>
                   ))}
@@ -136,7 +152,9 @@ export default function ChatPageClient({
                 onOpenContacts={() => setShowContacts(true)}
               />
             ) : (
-              <div className="h-full flex items-center justify-center text-ink-light">Select a conversation</div>
+              <div className="h-full flex items-center justify-center text-ink-light">
+                Select a conversation
+              </div>
             )}
           </div>
         </main>

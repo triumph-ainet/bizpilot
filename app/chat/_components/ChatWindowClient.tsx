@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useEffect, useRef, useState } from 'react';
+import { Smile, SendHorizonalIcon, ChevronLeft } from 'lucide-react';
+import EmojiPicker from '@/components/EmojiPicker';
 
 type Msg = { id: string; sender: string; content: string; created_at: string };
 
@@ -18,45 +19,37 @@ export default function ChatWindow({
 }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    let channel: any;
+    let mounted = true;
 
     async function load() {
-      const { data } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('vendor_id', vendorId)
-        .eq('customer_identifier', customer)
-        .order('created_at', { ascending: true });
-      setMessages(data || []);
+      try {
+        const res = await fetch(`/api/chat/messages?customer=${encodeURIComponent(customer)}`);
+        if (!res.ok) return;
 
-      // mark as read
+        const data = (await res.json()) as Msg[];
+        if (mounted) setMessages(data || []);
+      } catch {
+        // ignore transient fetch errors
+      }
+
       fetch('/api/chat/read', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vendorId, customer }),
       }).catch(() => {});
-
-      channel = supabase
-        .channel(`messages:${vendorId}:${customer}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `vendor_id=eq.${vendorId},customer_identifier=eq.${customer}`,
-          },
-          (payload) => setMessages((m) => [...m, payload.new as Msg])
-        )
-        .subscribe();
     }
 
     load();
+    const intervalId = setInterval(load, 3000);
+
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      mounted = false;
+      clearInterval(intervalId);
     };
   }, [vendorId, customer]);
 
@@ -66,33 +59,37 @@ export default function ChatWindow({
 
   async function send() {
     if (!input.trim()) return;
-    const text = input;
+    const text = input.trim();
+    setLoading(true);
     setInput('');
-    await supabase.from('messages').insert({
-      vendor_id: vendorId,
-      sender: 'vendor',
-      channel: 'web_chat',
-      content: text,
-      customer_identifier: customer,
-    });
 
-    // notify subscribers
-    fetch('/api/messages/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vendorId, customer, message: text }),
-    }).catch(() => {});
+    try {
+      await fetch('/api/chat/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer, content: text }),
+      });
+
+      const res = await fetch(`/api/chat/messages?customer=${encodeURIComponent(customer)}`);
+      if (!res.ok) return;
+      const data = (await res.json()) as Msg[];
+      setMessages(data || []);
+    } catch {
+      setInput(text);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="flex-1 bg-cream flex flex-col">
+    <div className="relative flex-1 bg-cream flex flex-col min-h-0">
       <div className="bg-green px-4 pt-4 pb-3 flex items-center gap-3 text-white">
         <button onClick={() => onOpenContacts && onOpenContacts()} className="text-white md:hidden">
-          Back
+          <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
           <p className="font-bold break-all">{customer}</p>
-          <p className="text-xs">
+          <p className="text-xs font-dm">
             {lastSeen ? `Last seen ${new Date(lastSeen).toLocaleString()}` : 'Online'}
           </p>
         </div>
@@ -101,7 +98,7 @@ export default function ChatWindow({
         </div>
       </div>
 
-      <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+      <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 pb-28">
         {messages.map((m) => (
           <div
             key={m.id}
@@ -127,8 +124,26 @@ export default function ChatWindow({
         ))}
       </div>
 
-      <div className="bg-cream-dark px-3 py-3 border-t border-gray-200 flex items-center gap-3">
-        <button className="text-ink-light px-2">😊</button>
+      <div className="bg-cream-dark px-3 py-3 border-t border-gray-200 flex items-center gap-3 sticky bottom-0 z-50 flex-shrink-0">
+        <div className="relative">
+          <button
+            onClick={() => setShowEmojiPicker((s) => !s)}
+            className="text-ink-light px-2"
+            aria-label="Toggle emoji picker"
+          >
+            <Smile className="w-5 h-5" />
+          </button>
+          {showEmojiPicker && (
+            <div className="absolute bottom-12 left-0 z-50">
+              <EmojiPicker
+                onSelect={(emoji) => {
+                  setInput((v) => v + emoji);
+                  setShowEmojiPicker(false);
+                }}
+              />
+            </div>
+          )}
+        </div>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -138,9 +153,10 @@ export default function ChatWindow({
         />
         <button
           onClick={send}
+          disabled={loading}
           className="bg-green text-white w-10 h-10 rounded-full flex items-center justify-center"
         >
-          ▶
+          <SendHorizonalIcon className="w-5 h-5" />
         </button>
       </div>
     </div>
