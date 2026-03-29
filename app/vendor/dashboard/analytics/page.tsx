@@ -175,7 +175,7 @@ export default async function AnalyticsPage() {
               href="/vendor/dashboard/analytics/report"
               className="px-3 py-2 bg-white border rounded-md text-sm"
             >
-              Printable Report
+              Reports Center
             </Link>
           </div>
         </div>

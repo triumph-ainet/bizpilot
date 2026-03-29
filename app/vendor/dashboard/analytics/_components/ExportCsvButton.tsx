@@ -19,7 +19,10 @@ export default function ExportCsvButton({ rows }: { rows: string[][] }) {
   }
 
   return (
-    <button onClick={handleClick} className="px-3 py-2 bg-green text-white rounded-md text-sm inline-flex items-center gap-2">
+    <button
+      onClick={handleClick}
+      className="px-3 py-2 bg-green text-white rounded-md text-sm inline-flex items-center gap-2"
+    >
       <Download className="w-4 h-4" />
       <span>Export CSV</span>
     </button>
