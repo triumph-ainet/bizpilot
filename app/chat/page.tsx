@@ -1,19 +1,57 @@
-"use client";
-
-import { useEffect, useState } from 'react';
+import { getVendorSessionFromCookies } from '@/lib/auth';
+import { createServerSupabase } from '@/lib/supabase';
+import ChatPageClient from './_components/ChatPageClient';
 import { BottomNav } from '@/components/ui';
 
 type Contact = { customer: string; lastMessage?: string; lastAt?: string; unread?: number };
 
-export default function ChatPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+export default async function ChatPage() {
+  const session = await getVendorSessionFromCookies();
+  if (!session?.vendorId) return <div className="p-6">Unauthorized</div>;
 
-  useEffect(() => {
-    fetch('/api/chat/contacts')
-      .then((r) => r.json())
-      .then((data) => setContacts(data))
-      .catch(() => setContacts([]));
-  }, []);
+  const supabase = createServerSupabase();
+
+  const { data } = await supabase
+    .from('messages')
+    .select('customer_identifier, content, sender, created_at')
+    .eq('vendor_id', session.vendorId)
+    .order('created_at', { ascending: false });
+
+  const seen = new Set<string>();
+  const contacts: Contact[] = [];
+
+  for (const m of (data || []) as any[]) {
+    const customer = m.customer_identifier as string;
+    if (seen.has(customer)) continue;
+    seen.add(customer);
+
+    const { data: lr } = await supabase
+      .from('message_reads')
+      .select('last_read')
+      .eq('vendor_id', session.vendorId)
+      .eq('customer_identifier', customer)
+      .limit(1)
+      .single();
+
+    let unread = 0;
+    try {
+      const q = supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('vendor_id', session.vendorId)
+        .eq('customer_identifier', customer)
+        .eq('sender', 'customer');
+
+      if (lr?.last_read) q.gt('created_at', lr.last_read as string);
+
+      const { count } = await q;
+      unread = Number(count || 0);
+    } catch (e) {
+      unread = 0;
+    }
+
+    contacts.push({ customer, lastMessage: m.content, lastAt: m.created_at, unread });
+  }
 
   return (
     <div className="min-h-screen bg-cream pb-24">
@@ -21,39 +59,7 @@ export default function ChatPage() {
         <h1 className="font-fraunces text-2xl font-extrabold text-white">Chats</h1>
       </div>
 
-      <div className="px-6 py-5 space-y-3">
-        {contacts.map((c) => (
-          <a key={c.customer} href={`/chat/${encodeURIComponent(c.customer)}`}>
-            <div className="bg-white rounded-2xl p-4 shadow-card active:scale-[0.98] transition-transform">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-amber rounded-full flex items-center justify-center font-bold text-base text-green">
-                  {c.customer.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center gap-3">
-                    <div>
-                      <p className="font-bold text-ink">{c.customer}</p>
-                      <p className="text-sm text-ink-light mt-1 truncate w-[260px]">{c.lastMessage}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-ink-light">{c.lastAt ? new Date(c.lastAt).toLocaleString() : ''}</p>
-                      {c.unread ? (
-                        <div className="mt-2 ml-auto inline-flex items-center justify-center bg-green text-white text-xs font-bold px-2 py-1 rounded-full">
-                          {c.unread}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-        ))}
-
-        {contacts.length === 0 && (
-          <div className="bg-white rounded-2xl p-5 text-sm text-ink-light text-center shadow-card">No chats yet</div>
-        )}
-      </div>
+      <ChatPageClient vendorId={session.vendorId} initialContacts={contacts} />
 
       <BottomNav active="/chat" />
     </div>

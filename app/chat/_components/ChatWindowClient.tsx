@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 type Msg = { id: string; sender: string; content: string; created_at: string };
 
-export default function ChatWindow({ vendorId, customer }: { vendorId: string; customer: string }) {
+export default function ChatWindow({
+  vendorId,
+  customer,
+  lastSeen,
+  onOpenContacts,
+}: {
+  vendorId: string;
+  customer: string;
+  lastSeen?: string | null;
+  onOpenContacts?: () => void;
+}) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -75,35 +85,63 @@ export default function ChatWindow({ vendorId, customer }: { vendorId: string; c
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <div className="bg-green px-4 pt-14 pb-3.5 flex items-center gap-3 text-white">
-        <a href="/chat" className="text-white">Back</a>
+    <div className="flex-1 bg-cream flex flex-col">
+      <div className="bg-green px-4 pt-4 pb-3 flex items-center gap-3 text-white">
+        <button onClick={() => onOpenContacts && onOpenContacts()} className="text-white md:hidden">
+          Back
+        </button>
         <div className="flex-1">
-          <p className="font-bold">{customer}</p>
-          <p className="text-xs">Chat</p>
+          <p className="font-bold break-all">{customer}</p>
+          <p className="text-xs">
+            {lastSeen ? `Last seen ${new Date(lastSeen).toLocaleString()}` : 'Online'}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="opacity-90">⋮</button>
         </div>
       </div>
 
-      <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2">
+      <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
         {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-3 py-2 rounded-xl ${m.sender === 'vendor' ? 'bg-[#d9fdd3]' : 'bg-white'}`}>
-              <div className="whitespace-pre-line">{m.content}</div>
-              <div className="text-[10px] text-ink-light mt-1">{new Date(m.created_at).toLocaleString()}</div>
+          <div
+            key={m.id}
+            className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`relative max-w-[80%] px-4 py-2 rounded-2xl ${
+                m.sender === 'vendor' ? 'bg-[#dcf8c6] text-ink' : 'bg-white text-ink'
+              }`}
+            >
+              <div className="whitespace-pre-line text-sm">{m.content}</div>
+              <div className="text-[10px] text-ink-light mt-1 flex items-center gap-2 justify-end">
+                <span>
+                  {new Date(m.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+                {m.sender === 'vendor' ? <span className="text-xs text-green">✓✓</span> : null}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-cream-dark px-3 py-2.5 pb-6 flex items-center gap-2.5">
+      <div className="bg-cream-dark px-3 py-3 border-t border-gray-200 flex items-center gap-3">
+        <button className="text-ink-light px-2">😊</button>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          className="flex-1 bg-white rounded-full px-4 py-3 outline-none"
-          placeholder="Type a message..."
+          className="flex-1 bg-white rounded-full px-4 py-2 outline-none text-sm"
+          placeholder="Type a message"
         />
-        <button onClick={send} className="bg-green text-white px-4 py-2 rounded-lg">Send</button>
+        <button
+          onClick={send}
+          className="bg-green text-white w-10 h-10 rounded-full flex items-center justify-center"
+        >
+          ▶
+        </button>
       </div>
     </div>
   );
