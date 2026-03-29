@@ -134,18 +134,42 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Items */}
-                <div className="bg-cream rounded-xl px-3 py-2.5 mb-3 space-y-1">
-                  {(order.items || []).slice(0, 3).map((item) => (
-                    <div key={item.id} className="flex justify-between text-[13px] text-ink-mid">
-                      <span>
-                        {item.quantity}× {item.product_name}
-                      </span>
-                      <span>₦{Number(item.unit_price * item.quantity).toLocaleString()}</span>
-                    </div>
-                  ))}
+                <div className="bg-cream/70 border border-green/10 rounded-xl px-3.5 py-3 mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-semibold tracking-wide uppercase text-ink-light">
+                      Items
+                    </p>
+                    <p className="text-[11px] text-ink-light">
+                      {(order.items || []).length} line{(order.items || []).length === 1 ? '' : 's'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {(order.items || []).slice(0, 3).map((item) => (
+                      <div
+                        key={item.id}
+                        className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-lg bg-white/70 px-2.5 py-1.5"
+                      >
+                        <p className="truncate text-[13px] font-medium text-ink">{item.product_name}</p>
+                        <span className="min-w-[40px] text-center rounded-md bg-cream px-1.5 py-0.5 text-[11px] font-semibold text-ink-mid">
+                          {item.quantity}x
+                        </span>
+                        <p className="text-right text-[12px] font-semibold text-ink-mid">
+                          ₦{Number(item.unit_price * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+
+                    {(order.items || []).length === 0 && (
+                      <div className="rounded-lg border border-dashed border-ink/15 bg-white/50 px-2.5 py-2 text-center text-[11px] text-ink-light">
+                        No items attached
+                      </div>
+                    )}
+                  </div>
+
                   {(order.items || []).length > 3 && (
-                    <div className="text-xs text-ink-light">
-                      + {(order.items || []).length - 3} more item(s)
+                    <div className="mt-2 rounded-lg border border-dashed border-ink/15 bg-white/50 px-2.5 py-1.5 text-center text-[11px] font-medium text-ink-light">
+                      + {(order.items || []).length - 3} additional item(s)
                     </div>
                   )}
                 </div>
