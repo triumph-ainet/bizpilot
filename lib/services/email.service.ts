@@ -1,8 +1,7 @@
-const MAILERLITE_API_URL =
-  process.env.MAILERLITE_API_URL || 'https://api.mailerlite.com/api/v2/email/send';
-const MAILERLITE_API_KEY = process.env.MAILERLITE_API_KEY;
-const MAILERLITE_FROM_EMAIL = process.env.MAILERLITE_FROM_EMAIL;
-const MAILERLITE_FROM_NAME = process.env.MAILERLITE_FROM_NAME || 'BizPilot';
+const RESEND_API_URL = process.env.RESEND_API_URL || 'https://api.resend.com/emails';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+const RESEND_FROM_NAME = process.env.RESEND_FROM_NAME || 'BizPilot';
 
 function escapeHtml(value: string) {
   return String(value)
@@ -14,26 +13,25 @@ function escapeHtml(value: string) {
 }
 
 export async function sendInvoiceEmail(to: string, subject: string, html: string) {
-  if (!MAILERLITE_API_KEY) {
-    throw new Error('Missing MAILERLITE_API_KEY');
+  if (!RESEND_API_KEY) {
+    throw new Error('Missing RESEND_API_KEY');
   }
 
-  const res = await fetch(MAILERLITE_API_URL, {
+  if (!RESEND_FROM_EMAIL) {
+    throw new Error('Missing RESEND_FROM_EMAIL');
+  }
+
+  const from = RESEND_FROM_NAME ? `${RESEND_FROM_NAME} <${RESEND_FROM_EMAIL}>` : RESEND_FROM_EMAIL;
+
+  const res = await fetch(RESEND_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${MAILERLITE_API_KEY}`,
+      Authorization: `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      to: [{ email: to }],
-      ...(MAILERLITE_FROM_EMAIL
-        ? {
-            from: {
-              email: MAILERLITE_FROM_EMAIL,
-              name: MAILERLITE_FROM_NAME,
-            },
-          }
-        : {}),
+      from,
+      to: [to],
       subject,
       html,
     }),
@@ -41,7 +39,7 @@ export async function sendInvoiceEmail(to: string, subject: string, html: string
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`MailerLite send failed: ${res.status} ${text}`);
+    throw new Error(`Resend send failed: ${res.status} ${text}`);
   }
 
   return res.json();

@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'If this account exists, a reset link has been generated.',
-      resetUrl,
     });
   } catch {
     return NextResponse.json({ error: 'Could not process reset request' }, { status: 500 });
