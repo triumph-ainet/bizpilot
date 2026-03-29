@@ -6,6 +6,7 @@ import { createInvoiceForOrder } from '@/lib/services/invoices.service';
 import { initializePayment } from '@/lib/services/payment.service';
 import { getVendorProducts } from '@/lib/services/inventory.service';
 import { createServerSupabase } from '@/lib/supabase';
+import { sendInvoiceEmail } from '@/lib/services/email.service';
 
 async function resolveVendorId(vendorIdentifier: string) {
   const supabase = createServerSupabase();
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
         last_accessed: new Date().toISOString(),
       })
       .select()
-      .single()
+      .single();
 
     const sessionToken = sessionInsert?.data?.token || null;
 
@@ -119,6 +120,30 @@ export async function POST(req: NextRequest) {
     const sessionUrl = sessionToken
       ? `${process.env.NEXT_PUBLIC_APP_URL}/session/${sessionToken}`
       : null;
+
+    if (message.senderId && message.senderId.includes('@')) {
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('business_name')
+        .eq('id', vendorId)
+        .single();
+
+      const emailBody = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial; color:#111;">
+          <h2 style="color:#0f766e;">Order confirmation from ${vendor?.business_name || 'Vendor'}</h2>
+          <p style="white-space:pre-wrap;">${confirmationText}</p>
+          ${sessionUrl ? `<p>Track your order: <a href="${sessionUrl}">${sessionUrl}</a></p>` : ''}
+        </div>
+      `;
+
+      await sendInvoiceEmail(
+        message.senderId,
+        `Order confirmation - ${vendor?.business_name || 'BizPilot Store'}`,
+        emailBody
+      ).catch((err) => {
+        console.warn('[messages/inbound] failed to send order confirmation email', err);
+      });
+    }
 
     return NextResponse.json({
       ...reply,

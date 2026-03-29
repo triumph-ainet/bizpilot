@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 import crypto from 'crypto';
+import { buildPasswordResetHtml, sendInvoiceEmail } from '@/lib/services/email.service';
 
 const RESET_TOKEN_TTL_MINUTES = 30;
 
@@ -21,8 +22,8 @@ export async function POST(req: NextRequest) {
 
     const { data: vendor } = await supabase
       .from('vendors')
-      .select('id')
-      .eq('business_name', normalizedEmail)
+      .select('id, business_name, email')
+      .eq('email', normalizedEmail)
       .single();
 
     if (vendor?.id) {
@@ -35,7 +36,19 @@ export async function POST(req: NextRequest) {
         .eq('id', vendor.id);
     }
 
-    const resetUrl = `/auth/reset-password?token=${resetToken}`;
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
+    const resetPath = `/auth/reset-password?token=${resetToken}`;
+    const resetUrl = appUrl ? `${appUrl}${resetPath}` : resetPath;
+
+    if (vendor?.id && vendor.email) {
+      const html = buildPasswordResetHtml({
+        resetUrl,
+        ttlMinutes: RESET_TOKEN_TTL_MINUTES,
+      });
+      await sendInvoiceEmail(vendor.email, 'Reset your BizPilot password', html).catch((err) => {
+        console.warn('[forgot-password] failed to send reset email', err);
+      });
+    }
 
     return NextResponse.json({
       success: true,

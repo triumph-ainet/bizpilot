@@ -1,9 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/services/payment.service';
-import { markOrderPaid } from '@/lib/services/order.service';
-import { decrementBatch, checkLowStock } from '@/lib/services/inventory.service';
 import { generateReceipt } from '@/lib/services/ai.service';
 import { createServerSupabase } from '@/lib/supabase';
+import { buildLowStockAlertHtml, sendInvoiceEmail } from '@/lib/services/email.service';
+
+type WebhookProcessItem = {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+};
+
+type WebhookProcessOrder = {
+  id: string;
+  vendor_id: string;
+  channel: string;
+  customer_identifier: string;
+  total: number;
+};
+
+type WebhookProcessResult = {
+  status: string;
+  order?: WebhookProcessOrder;
+  items?: WebhookProcessItem[];
+};
+
+type StockAlertRow = {
+  product_name: string;
+  quantity: number | null;
+  threshold: number | null;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,7 +58,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, status: 'rpc_error' }, { status: 500 });
     }
 
-    const result = procResult as any;
+    const result = procResult as WebhookProcessResult | null;
     if (!result || result.status === 'no_payment') {
       return NextResponse.json({ received: true, status: 'no_payment_record' });
     }
@@ -41,10 +67,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, status: 'already_processed' });
     }
 
-    const order = result.order as any;
-    const items = result.items as any[] | null;
+    if (!result.order) {
+      return NextResponse.json({ received: true, status: 'missing_order' }, { status: 500 });
+    }
 
-    const lowStockProducts = items ? items.filter((it: any) => Number(it.quantity) > 0) : [];
+    const order = result.order;
+    const items = result.items || [];
+
+    const purchasedProductIds = items.map((it) => it.product_id).filter(Boolean);
+
+    const { data: vendor } = await supabase
+      .from('vendors')
+      .select('id, business_name, email')
+      .eq('id', order.vendor_id)
+      .single();
+
+    const vendorName = vendor?.business_name || 'Vendor';
+
+    const { data: stockAlerts } = purchasedProductIds.length
+      ? await supabase
+          .from('stock_alerts')
+          .select('product_name, quantity, threshold')
+          .eq('vendor_id', order.vendor_id)
+          .eq('resolved', false)
+          .in('product_id', purchasedProductIds)
+      : { data: [] as StockAlertRow[] };
 
     const receipt = await generateReceipt(
       order.customer_identifier,
@@ -61,12 +108,19 @@ export async function POST(req: NextRequest) {
 
     // Try to send email if customer_identifier looks like an email
     try {
-      const { sendInvoiceEmail, buildReceiptHtml } = await import('@/lib/services/email.service');
+      const { buildReceiptHtml } = await import('@/lib/services/email.service');
 
       // If customer_identifier is an email, send receipt there
       if (order.customer_identifier && order.customer_identifier.includes('@')) {
-        const html = buildReceiptHtml({ vendorName: order.store_name || 'Vendor', customer: order.customer_identifier, receiptText: receipt });
-        await sendInvoiceEmail(order.customer_identifier, `Receipt - ${payload.txnref}`, html).catch(() => null);
+        const html = buildReceiptHtml({
+          vendorName,
+          receiptText: receipt,
+        });
+        await sendInvoiceEmail(
+          order.customer_identifier,
+          `Receipt - ${payload.txnref}`,
+          html
+        ).catch(() => null);
       }
 
       // Also look up any session tied to this order and email the session link if we have an email
@@ -80,17 +134,40 @@ export async function POST(req: NextRequest) {
       const sessionEmail = session?.customer_email || null;
       if (sessionEmail) {
         const sessionUrl = `${process.env.NEXT_PUBLIC_APP_URL}/session/${session.token}`;
-        const html = buildReceiptHtml({ vendorName: order.store_name || 'Vendor', customer: order.customer_identifier, receiptText: receipt, sessionUrl });
-        await sendInvoiceEmail(sessionEmail, `Your order is confirmed - ${payload.txnref}`, html).catch(() => null);
+        const html = buildReceiptHtml({
+          vendorName,
+          receiptText: receipt,
+          sessionUrl,
+        });
+        await sendInvoiceEmail(
+          sessionEmail,
+          `Your order is confirmed - ${payload.txnref}`,
+          html
+        ).catch(() => null);
       }
     } catch (e) {
       console.warn('Failed to send receipt email', e);
     }
 
+    if (vendor?.email && stockAlerts && stockAlerts.length > 0) {
+      const html = buildLowStockAlertHtml({
+        vendorName,
+        alerts: stockAlerts.map((alert) => ({
+          productName: alert.product_name,
+          quantity: Number(alert.quantity || 0),
+          threshold: Number(alert.threshold || 0),
+        })),
+      });
+
+      await sendInvoiceEmail(vendor.email, 'Low stock alert', html).catch((err) => {
+        console.warn('[webhook] failed to send low stock email', err);
+      });
+    }
+
     return NextResponse.json({
       received: true,
       orderId: order.id,
-      lowStockAlerts: lowStockProducts.length,
+      lowStockAlerts: stockAlerts?.length || 0,
     });
   } catch (error) {
     console.error('[webhook]', error);

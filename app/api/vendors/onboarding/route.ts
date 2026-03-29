@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 import { getVendorSessionFromRequest } from '@/lib/auth';
+import { buildOnboardingCompletedHtml, sendInvoiceEmail } from '@/lib/services/email.service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +26,10 @@ export async function POST(req: NextRequest) {
     };
 
     if (slug && typeof slug === 'string') {
-      updates.store_slug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+      updates.store_slug = slug
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '')
+        .slice(0, 40);
     }
 
     if (bankCode && bankName && accountNumber && accountName) {
@@ -41,6 +45,23 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (updates.onboarding_step === 4) {
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('business_name, email')
+        .eq('id', vendorId)
+        .single();
+
+      if (vendor?.email) {
+        const html = buildOnboardingCompletedHtml({
+          vendorName: vendor.business_name || 'Vendor',
+        });
+        await sendInvoiceEmail(vendor.email, 'Onboarding completed', html).catch((err) => {
+          console.warn('[vendors/onboarding] failed to send completion email', err);
+        });
+      }
     }
 
     return NextResponse.json({ success: true });

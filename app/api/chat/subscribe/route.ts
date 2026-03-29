@@ -10,13 +10,16 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServerSupabase();
-    await supabase.from('message_subscriptions').insert({ vendor_id: vendorId, customer_identifier: customer, email });
+    await supabase
+      .from('message_subscriptions')
+      .insert({ vendor_id: vendorId, customer_identifier: customer, email });
 
     // Send confirmation email
-    const subject = 'Chat notifications enabled';
-    const html = `<p>You will receive email notifications for new messages for chat with ${customer}.</p>`;
+    const vendorName = 'BizPilot';
+    const confirmationMessage = `You will receive email notifications for new messages in your chat with ${customer}.`;
+    const html = `<p>${confirmationMessage}</p>`;
     try {
-      await sendNotificationEmail(email, subject, html, vendorId, customer);
+      await sendNotificationEmail(email, vendorName, customer, confirmationMessage, html);
     } catch (e) {
       // swallow but continue
       console.warn('Notification send failed', e);

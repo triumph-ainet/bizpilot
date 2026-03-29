@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServerSupabase();
 
-    const { data: vendor } = await supabase.from('vendors').select('id, store_name, contact_email').eq('id', vendorId).single();
+    const { data: vendor } = await supabase
+      .from('vendors')
+      .select('id, business_name, email')
+      .eq('id', vendorId)
+      .single();
 
     const { data } = await supabase
       .from('message_subscriptions')
@@ -19,13 +23,22 @@ export async function POST(req: NextRequest) {
       .eq('vendor_id', vendorId)
       .eq('customer_identifier', customer);
 
-    const emails = (data || []).map((r: any) => r.email).filter(Boolean);
+    const emails = (data || [])
+      .map((r: { email: string | null }) => r.email)
+      .filter((value): value is string => Boolean(value));
 
-    const html = buildNotificationHtml({ vendorName: vendor?.store_name || 'Vendor', customer, message, chatUrl: `${process.env.NEXT_PUBLIC_APP_URL}/chat/session/${vendorId}/${encodeURIComponent(customer)}` });
+    const html = buildNotificationHtml({
+      vendorName: vendor?.business_name || 'Vendor',
+      customer,
+      message,
+      chatUrl: `${process.env.NEXT_PUBLIC_APP_URL}/chat/session/${vendorId}/${encodeURIComponent(customer)}`,
+    });
 
     await Promise.all(
       emails.map((to: string) =>
-        sendNotificationEmail(to, vendor?.store_name || 'Vendor', customer, message, html).catch((e) => console.warn('email error', e))
+        sendNotificationEmail(to, vendor?.business_name || 'Vendor', customer, message, html).catch(
+          (e) => console.warn('email error', e)
+        )
       )
     );
 

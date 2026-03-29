@@ -175,7 +175,7 @@ export default function AddProductPage() {
                     <div className="text-sm text-ink-light">Tip: Camera works best for single product images.</div>
                   </div>
                 ) : (
-                  <div className="w-full">
+                  <div className="w-full height-full">
                     <CameraCapture onCapture={(blob, dataUrl) => {
                       setShowCamera(false);
                       setImageFile(blob as File);

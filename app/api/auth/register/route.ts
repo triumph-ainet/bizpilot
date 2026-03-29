@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 import { signVendorToken } from '@/lib/auth';
+import { buildWelcomeEmailHtml, sendInvoiceEmail } from '@/lib/services/email.service';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -23,7 +24,12 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
-    const slugBase = businessName.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 30);
+    const slugBase = businessName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .slice(0, 30);
     const slug =
       slugBase
         .toLowerCase()
@@ -48,6 +54,18 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) throw new Error(error.message);
+
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
+    const storeUrl =
+      appUrl && vendor.store_slug ? `${appUrl}/store/${vendor.store_slug}` : undefined;
+
+    const welcomeHtml = buildWelcomeEmailHtml({
+      businessName: vendor.business_name,
+      storeUrl,
+    });
+    await sendInvoiceEmail(vendor.email, 'Welcome to BizPilot', welcomeHtml).catch((err) => {
+      console.warn('[register] failed to send welcome email', err);
+    });
 
     const token = await signVendorToken({ vendorId: vendor.id, phone });
 
