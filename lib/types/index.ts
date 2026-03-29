@@ -1,6 +1,7 @@
 export interface Vendor {
   id: string;
   business_name: string;
+  email: string | null;
   phone: string;
   bank_name: string;
   bank_code: string;
@@ -125,7 +126,7 @@ export interface Invoice {
   status: 'pending' | 'paid' | 'cancelled';
   amount: number;
   due_at: string | null;
-  items: Record<string, any> | null;
+  items: Record<string, unknown> | null;
   pdf_url: string | null;
   created_at: string;
 }
