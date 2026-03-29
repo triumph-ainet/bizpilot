@@ -6,6 +6,10 @@ import EmojiPicker from '@/components/EmojiPicker';
 
 type Msg = { id: string; sender: string; content: string; created_at: string };
 
+function formatMessageTime(value: string) {
+  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export default function ChatWindow({
   vendorId,
   customer,
@@ -90,53 +94,66 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="relative flex-1 bg-cream flex flex-col min-h-0">
-      <div className="bg-green px-4 pt-4 pb-3 flex items-center gap-3 text-white">
-        <button onClick={() => onOpenContacts && onOpenContacts()} className="text-white md:hidden">
+    <div className="relative flex min-h-0 flex-1 flex-col bg-gradient-to-b from-[#f9f4e9] to-[#f4eddf]">
+      <div className="flex items-center gap-3 border-b border-[#e7dccb] bg-white/95 px-4 py-3 backdrop-blur-sm">
+        <button
+          onClick={() => onOpenContacts && onOpenContacts()}
+          className="rounded-full p-1.5 text-ink md:hidden"
+          aria-label="Open contacts"
+        >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <p className="font-bold break-all">{customer}</p>
-          <p className="text-xs font-dm">
-            {lastSeen ? `Last seen ${new Date(lastSeen).toLocaleString()}` : 'Online'}
-          </p>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green/10 text-xs font-bold text-green">
+          {customer.trim().slice(-2).toUpperCase()}
         </div>
-        <div className="flex items-center gap-3">
-          <button className="opacity-90">⋮</button>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-ink">{customer}</p>
+          <p className="truncate text-xs text-ink-light">
+            {lastSeen ? `Last activity ${new Date(lastSeen).toLocaleString()}` : 'Active now'}
+          </p>
         </div>
       </div>
 
-      <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 pb-28">
+      <div ref={bodyRef} className="chat-pattern flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-5 pb-28">
+        {messages.length === 0 && (
+          <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-[#eadfce] bg-white/90 px-5 py-4 text-center shadow-sm">
+            <p className="font-fraunces text-lg text-green">Start the conversation</p>
+            <p className="mt-1 text-sm text-ink-light">Messages with this customer will appear here.</p>
+          </div>
+        )}
         {messages.map((m) => (
           <div
             key={m.id}
             className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`relative max-w-[80%] px-4 py-2 rounded-2xl ${
-                m.sender === 'vendor' ? 'bg-[#dcf8c6] text-ink' : 'bg-white text-ink'
+              className={`relative max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
+                m.sender === 'vendor'
+                  ? 'bg-gradient-to-br from-green to-green-mid text-white'
+                  : 'border border-[#ece1d2] bg-white text-ink'
               }`}
             >
               <div className="whitespace-pre-line text-sm">{m.content}</div>
-              <div className="text-[10px] text-ink-light mt-1 flex items-center gap-2 justify-end">
+              <div
+                className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${
+                  m.sender === 'vendor' ? 'text-white/80' : 'text-ink-light'
+                }`}
+              >
                 <span>
-                  {new Date(m.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {formatMessageTime(m.created_at)}
                 </span>
-                {m.sender === 'vendor' ? <span className="text-xs text-green">✓✓</span> : null}
+                {m.sender === 'vendor' ? <span className="text-xs">✓✓</span> : null}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-cream-dark px-3 py-3 border-t border-gray-200 flex items-center gap-3 sticky bottom-0 z-50 flex-shrink-0">
+      <div className="sticky bottom-0 z-50 flex flex-shrink-0 items-center gap-2 border-t border-[#e7dccb] bg-[#f7f0e4] px-3 py-3 backdrop-blur-sm">
         <div className="relative">
           <button
             onClick={() => setShowEmojiPicker((s) => !s)}
-            className="text-ink-light px-2"
+            className="rounded-full p-2 text-ink-light transition hover:bg-white"
             aria-label="Toggle emoji picker"
           >
             <Smile className="w-5 h-5" />
@@ -156,13 +173,14 @@ export default function ChatWindow({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          className="flex-1 bg-white rounded-full px-4 py-2 outline-none text-sm"
-          placeholder="Type a message"
+          className="flex-1 rounded-full border border-[#e2d7c5] bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-light"
+          placeholder="Write a message"
         />
         <button
           onClick={send}
           disabled={loading}
-          className="bg-green text-white w-10 h-10 rounded-full flex items-center justify-center"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white transition hover:bg-green-mid disabled:opacity-50"
+          aria-label="Send message"
         >
           <SendHorizonalIcon className="w-5 h-5" />
         </button>

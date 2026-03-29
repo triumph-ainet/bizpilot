@@ -55,7 +55,7 @@ export default async function ChatPage() {
 
   return (
     <div className="min-h-screen bg-cream pb-24">
-      <div className="bg-green px-6 pt-14 pb-5">
+      <div className="bg-green px-6 pt-6 pb-5">
         <h1 className="font-fraunces text-2xl font-extrabold text-white">Chats</h1>
       </div>
 
