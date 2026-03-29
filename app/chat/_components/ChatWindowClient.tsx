@@ -22,9 +22,14 @@ export default function ChatWindow({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const activeCustomerRef = useRef(customer);
 
   useEffect(() => {
     let mounted = true;
+    activeCustomerRef.current = customer;
+    setMessages([]);
+    setInput('');
+    setShowEmojiPicker(false);
 
     async function load() {
       try {
@@ -32,7 +37,7 @@ export default function ChatWindow({
         if (!res.ok) return;
 
         const data = (await res.json()) as Msg[];
-        if (mounted) setMessages(data || []);
+        if (mounted && activeCustomerRef.current === customer) setMessages(data || []);
       } catch {
         // ignore transient fetch errors
       }
@@ -60,6 +65,7 @@ export default function ChatWindow({
   async function send() {
     if (!input.trim()) return;
     const text = input.trim();
+    const selectedCustomer = customer;
     setLoading(true);
     setInput('');
 
@@ -67,17 +73,19 @@ export default function ChatWindow({
       await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer, content: text }),
+        body: JSON.stringify({ customer: selectedCustomer, content: text }),
       });
 
-      const res = await fetch(`/api/chat/messages?customer=${encodeURIComponent(customer)}`);
+      const res = await fetch(
+        `/api/chat/messages?customer=${encodeURIComponent(selectedCustomer)}`
+      );
       if (!res.ok) return;
       const data = (await res.json()) as Msg[];
-      setMessages(data || []);
+      if (activeCustomerRef.current === selectedCustomer) setMessages(data || []);
     } catch {
-      setInput(text);
+      if (activeCustomerRef.current === selectedCustomer) setInput(text);
     } finally {
-      setLoading(false);
+      if (activeCustomerRef.current === selectedCustomer) setLoading(false);
     }
   }
 

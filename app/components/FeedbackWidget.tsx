@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Star } from 'lucide-react';
 
 export default function FeedbackWidget({
   vendorId,
@@ -66,14 +66,13 @@ export default function FeedbackWidget({
           <Sparkles className="h-5 w-5" />
         </div>
 
-        <div>
-          <h3 className="text-sm font-semibold">Rate your experience</h3>
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold font-fraunces">Rate your experience</h3>
           <p className="text-xs text-slate-500">Your feedback helps vendors improve service.</p>
         </div>
       </div>
 
-      <div className="mb-3">
-        <span className="text-sm font-medium block mb-2">Your rating</span>
+      <div className="mb-3 flex flex-col justify-center items-center">
         <div role="radiogroup" aria-label="Rating" className="flex items-center gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -83,7 +82,8 @@ export default function FeedbackWidget({
               aria-pressed={rating === n}
               className={`px-3 py-2 rounded text-sm focus:outline-none ${rating === n ? 'bg-amber-300 text-slate-900' : 'bg-slate-100 text-slate-700'}`}
             >
-              {n}★
+              {n}
+              <Star className="inline-block w-4 h-4 ml-1" />
             </button>
           ))}
         </div>
@@ -115,7 +115,9 @@ export default function FeedbackWidget({
         </button>
 
         {status === 'sent' && (
-          <span className="text-sm text-green-600">Thanks — your feedback was sent.</span>
+          <span className="text-sm text-[var(--color-green)] font-dm">
+            Thanks — your feedback was sent.
+          </span>
         )}
         {status === 'error' && (
           <span className="text-sm text-red-600">{error ?? 'Failed to send'}</span>

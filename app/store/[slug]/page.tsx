@@ -6,6 +6,7 @@ import ChatFloating from './_components/ChatFloating';
 import CatalogPanel from './_components/CatalogPanel';
 import OrderForm from './_components/OrderForm';
 import StoreHeader from './_components/StoreHeader';
+import FeedbackWidget from '@/app/components/FeedbackWidget';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
   const { slug } = (React as any).use(params);

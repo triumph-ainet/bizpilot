@@ -146,6 +146,7 @@ export default function ChatPageClient({
           <div className="flex-1 flex flex-col">
             {selected ? (
               <ChatWindow
+                key={selected}
                 vendorId={vendorId}
                 customer={selected}
                 lastSeen={selectedContact?.lastAt}

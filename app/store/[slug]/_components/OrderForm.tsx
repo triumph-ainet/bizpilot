@@ -25,7 +25,6 @@ type Props = {
 };
 
 export default function OrderForm({
-  slug,
   storeReady,
   vendorId,
   order,
@@ -62,7 +61,7 @@ export default function OrderForm({
         )}
 
         {vendorId && (
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col items-center gap-6">
             <FeedbackWidget
               vendorId={vendorId}
               orderId={null}
@@ -123,6 +122,7 @@ export default function OrderForm({
               type="tel"
               placeholder="081 234 5678"
               value={phone}
+              maxLength={11}
               onChange={(e) => setPhone(e.target.value)}
               required
             />
