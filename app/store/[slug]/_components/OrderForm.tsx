@@ -19,6 +19,7 @@ type Props = {
   sent: boolean;
   setSent: (b: boolean) => void;
   sessionUrl: string | null;
+  paymentUrl: string | null;
   showShareModal: boolean;
   setShowShareModal: (b: boolean) => void;
   submitError: string;
@@ -36,6 +37,7 @@ export default function OrderForm({
   sent,
   setSent,
   sessionUrl,
+  paymentUrl,
   showShareModal,
   setShowShareModal,
   submitError,
@@ -46,8 +48,18 @@ export default function OrderForm({
         <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green" />
         <h2 className="font-fraunces text-xl font-bold text-ink mb-2">Order Received!</h2>
         <p className="text-sm text-ink-light leading-relaxed">
-          We&apos;ve received your order and a payment link will be sent to your WhatsApp shortly.
+          We&apos;ve received your order. Complete payment using the link below.
         </p>
+        {paymentUrl && (
+          <a
+            href={paymentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-green px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-mid"
+          >
+            Pay now
+          </a>
+        )}
         {sessionUrl && (
           <>
             <SessionConfirmation

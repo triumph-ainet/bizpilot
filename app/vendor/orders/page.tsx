@@ -150,7 +150,9 @@ export default function OrdersPage() {
                         key={item.id}
                         className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-lg bg-white/70 px-2.5 py-1.5"
                       >
-                        <p className="truncate text-[13px] font-medium text-ink">{item.product_name}</p>
+                        <p className="truncate text-[13px] font-medium text-ink">
+                          {item.product_name}
+                        </p>
                         <span className="min-w-[40px] text-center rounded-md bg-cream px-1.5 py-0.5 text-[11px] font-semibold text-ink-mid">
                           {item.quantity}x
                         </span>

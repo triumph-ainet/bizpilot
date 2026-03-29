@@ -54,25 +54,38 @@ export async function POST(req: NextRequest) {
     const { order, items } = await createOrder(parsed, normalizedMessage, catalog);
     const invoice = await createInvoiceForOrder(order.id, order.total, items).catch(() => null);
 
+    const sender = String(message.senderId || '').trim();
+    const appName = (process.env.NEXT_PUBLIC_APP_NAME || 'bizpilot.local').trim();
+    const paymentEmail = sender.includes('@')
+      ? sender
+      : `${sender.replace(/[^a-zA-Z0-9]/g, '') || 'customer'}@${appName}`;
+
     const payment = await initializePayment(
       order.id,
       order.total * 100, // convert to kobo
-      `${message.senderId}@bizpilot.co`
+      paymentEmail,
     ).catch(() => ({
       paymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${order.id}`,
       reference: order.id,
     }));
 
     const supabase = createServerSupabase();
-    await supabase.from('payments').insert({
+    const { error: paymentInsertError } = await supabase.from('payments').insert({
       order_id: order.id,
       interswitch_reference: payment.reference,
       amount: order.total,
       status: 'pending',
     });
 
+    if (paymentInsertError) {
+      console.warn('[messages/inbound] failed to persist payment', {
+        orderId: order.id,
+        error: paymentInsertError.message,
+      });
+    }
+
     // Create a persistent session so customer can resume via a shareable link
-    const sessionInsert = await supabase
+    const { data: sessionData, error: sessionInsertError } = await supabase
       .from('sessions')
       .insert({
         vendor_id: vendorId,
@@ -85,7 +98,14 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    const sessionToken = sessionInsert?.data?.token || null;
+    if (sessionInsertError) {
+      console.warn('[messages/inbound] failed to create session', {
+        orderId: order.id,
+        error: sessionInsertError.message,
+      });
+    }
+
+    const sessionToken = sessionData?.token || null;
 
     const confirmationText = await generateOrderConfirmation(
       items.map((i) => ({ name: i.product_name, quantity: i.quantity, price: i.unit_price })),

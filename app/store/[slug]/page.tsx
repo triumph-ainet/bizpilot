@@ -6,7 +6,6 @@ import ChatFloating from './_components/ChatFloating';
 import CatalogPanel from './_components/CatalogPanel';
 import OrderForm from './_components/OrderForm';
 import StoreHeader from './_components/StoreHeader';
-import FeedbackWidget from '@/app/components/FeedbackWidget';
 
 export default function StorePage({ params }: { params: { slug: string } }) {
   const { slug } = (React as any).use(params);
@@ -19,7 +18,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
-  const [emailForSession, setEmailForSession] = useState('');
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -70,6 +69,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
 
       setSent(true);
       setSessionUrl(data.sessionUrl || null);
+      setPaymentUrl(data?.order?.paymentUrl || data.paymentUrl || null);
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Could not submit order');
     } finally {
@@ -154,6 +154,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
           sent={sent}
           setSent={setSent}
           sessionUrl={sessionUrl}
+          paymentUrl={paymentUrl}
           showShareModal={showShareModal}
           setShowShareModal={setShowShareModal}
           submitError={submitError}

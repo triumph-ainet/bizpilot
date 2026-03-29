@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
 
+export async function GET(_req: NextRequest, context: { params: Promise<{ token: string }> }) {
+  try {
+    const { token } = await context.params;
+    const supabase = createServerSupabase();
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('token', token)
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ session: data });
+  } catch (e) {
+    console.error('[session read]', e);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest, context: { params: Promise<{ token: string }> }) {
   try {
     const { token } = await context.params;
