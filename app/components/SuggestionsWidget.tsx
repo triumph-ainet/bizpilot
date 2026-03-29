@@ -1,5 +1,6 @@
 'use client';
 
+import { Sparkles, Package } from 'lucide-react';
 import { useState } from 'react';
 
 type Suggestion = {
@@ -54,23 +55,18 @@ export default function SuggestionsWidget({ vendorId }: { vendorId: string }) {
         maximumFractionDigits: 0,
       }).format(n);
     } catch {
-      return `₦${Math.round(n)}`;
+      return `₦ ${Math.round(n)}`;
     }
   }
 
   return (
-    <div className="w-full max-w-md bg-white rounded shadow p-4">
+    <div className="w-full max-w-md bg-white rounded-lg shadow p-4">
       <div className="flex items-start gap-3 mb-3">
-        <div className="p-2 bg-emerald-50 rounded text-emerald-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l.286.88a1 1 0 00.95.69h.927c.969 0 1.371 1.24.588 1.81l-.75.548a1 1 0 00-.36 1.118l.287.88c.3.92-.755 1.688-1.538 1.118l-.75-.548a1 1 0 00-1.176 0l-.75.548c-.783.57-1.838-.198-1.539-1.118l.287-.88a1 1 0 00-.36-1.118l-.75-.548C3.103 6.737 3.505 5.497 4.474 5.497h.927a1 1 0 00.95-.69l.286-.88z" />
-          </svg>
+        <div
+          className="p-2 rounded"
+          style={{ backgroundColor: 'var(--color-green-light)', color: 'var(--color-green)' }}
+        >
+          <Sparkles className="h-5 w-5" />
         </div>
         <div>
           <h3 className="text-sm font-semibold">Need help choosing?</h3>
@@ -88,14 +84,15 @@ export default function SuggestionsWidget({ vendorId }: { vendorId: string }) {
         value={intent}
         onChange={(e) => setIntent(e.target.value)}
         placeholder="e.g. affordable running shoes for wide feet"
-        className="w-full p-2 border rounded mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200"
+        className="w-full p-2 border rounded mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-green-light)]"
       />
 
       <div className="flex gap-2 mb-3">
         <button
           onClick={ask}
           disabled={loading}
-          className="bg-emerald-600 disabled:opacity-60 text-white px-3 py-2 rounded text-sm"
+          className="disabled:opacity-60 text-white px-3 py-2 rounded text-sm bg-[var(--color-green)] hover:bg-[var(--color-green-mid)]"
+          style={{ transition: 'background-color 150ms' }}
         >
           {loading ? 'Thinking…' : 'Suggest'}
         </button>
@@ -128,7 +125,7 @@ export default function SuggestionsWidget({ vendorId }: { vendorId: string }) {
                     <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
-                      📦
+                      <Package className="h-6 w-6" />
                     </div>
                   )}
                 </div>
