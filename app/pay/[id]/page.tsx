@@ -39,7 +39,8 @@ export default async function PayPage({ params }: { params: { id: string } }) {
             Complete your payment
           </h1>
           <p className="mt-2 text-sm text-[var(--color-ink-mid)]">
-            Use the secure payment gateway to finish this order. The payment page opens in a new tab.
+            Use the secure payment gateway to finish this order. The payment page opens in a new
+            tab.
           </p>
 
           <div className="mt-6 rounded-2xl border border-[var(--color-cream-dark)] bg-[var(--color-cream)] p-4 sm:p-5">
@@ -47,9 +48,13 @@ export default async function PayPage({ params }: { params: { id: string } }) {
               Order summary
             </p>
             {formattedTotal ? (
-              <p className="mt-2 text-2xl font-semibold text-[var(--color-green)]">₦{formattedTotal}</p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--color-green)]">
+                ₦{formattedTotal}
+              </p>
             ) : (
-              <p className="mt-2 text-sm text-[var(--color-ink-mid)]">Order details are not available.</p>
+              <p className="mt-2 text-sm text-[var(--color-ink-mid)]">
+                Order details are not available.
+              </p>
             )}
           </div>
 
