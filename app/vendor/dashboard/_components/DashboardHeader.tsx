@@ -26,7 +26,7 @@ export default function DashboardHeader({
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/analytics"
+            href="/vendor/dashboard/analytics"
             className="text-sm bg-white/10 text-white px-3 py-2 rounded-md font-semibold hover:bg-white/20"
           >
             Analytics
