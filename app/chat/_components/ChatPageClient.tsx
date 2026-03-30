@@ -113,9 +113,13 @@ export default function ChatPageClient({
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div className="truncate font-medium text-ink">{c.customer}</div>
-                    <div className="ml-3 text-[11px] text-ink-light">{formatContactTime(c.lastAt)}</div>
+                    <div className="ml-3 text-[11px] text-ink-light">
+                      {formatContactTime(c.lastAt)}
+                    </div>
                   </div>
-                  <div className="mt-1 truncate text-sm text-ink-light">{c.lastMessage?.slice(0, 35) || 'No messages yet'}</div>
+                  <div className="mt-1 truncate text-sm text-ink-light">
+                    {c.lastMessage?.slice(0, 35) || 'No messages yet'}
+                  </div>
                 </div>
                 {c.unread ? (
                   <div className="ml-1 rounded-full bg-amber px-2 py-1 text-[11px] font-bold text-white">
@@ -132,7 +136,7 @@ export default function ChatPageClient({
           </div>
         </aside>
 
-        <main className="relative flex-1 bg-cream">
+        <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-cream">
           {/* Mobile: contacts drawer */}
           {showContacts && (
             <div
@@ -144,7 +148,9 @@ export default function ChatPageClient({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="mb-2 px-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-mid">Chats</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-green-mid">
+                    Chats
+                  </p>
                   <h3 className="font-fraunces text-2xl font-bold text-green">Conversations</h3>
                 </div>
                 <div className="mb-3 p-1">
@@ -170,9 +176,13 @@ export default function ChatPageClient({
                       <div className="flex-1">
                         <div className="flex justify-between items-center">
                           <div className="font-medium text-ink truncate">{c.customer}</div>
-                          <div className="text-xs text-ink-light">{formatContactTime(c.lastAt)}</div>
+                          <div className="text-xs text-ink-light">
+                            {formatContactTime(c.lastAt)}
+                          </div>
                         </div>
-                        <div className="mt-1 truncate text-sm text-ink-light">{c.lastMessage || 'No messages yet'}</div>
+                        <div className="mt-1 truncate text-sm text-ink-light">
+                          {c.lastMessage || 'No messages yet'}
+                        </div>
                       </div>
                       {c.unread ? (
                         <div className="ml-1 rounded-full bg-amber px-2 py-1 text-[11px] font-bold text-white">
@@ -182,14 +192,16 @@ export default function ChatPageClient({
                     </button>
                   ))}
                   {filteredContacts.length === 0 && (
-                    <div className="px-4 py-6 text-center text-sm text-ink-light">No matching conversations.</div>
+                    <div className="px-4 py-6 text-center text-sm text-ink-light">
+                      No matching conversations.
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          <div className="flex-1 flex flex-col">
+          <div className="flex min-h-0 flex-1 flex-col">
             {selected ? (
               <ChatWindow
                 key={selected}

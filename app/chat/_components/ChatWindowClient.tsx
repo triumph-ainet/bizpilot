@@ -27,10 +27,19 @@ export default function ChatWindow({
   const [loading, setLoading] = useState(false);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const activeCustomerRef = useRef(customer);
+  const shouldAutoScrollRef = useRef(true);
+
+  function updateAutoScrollPreference() {
+    const el = bodyRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
+    shouldAutoScrollRef.current = distanceFromBottom < 48;
+  }
 
   useEffect(() => {
     let mounted = true;
     activeCustomerRef.current = customer;
+    shouldAutoScrollRef.current = true;
     setMessages([]);
     setInput('');
     setShowEmojiPicker(false);
@@ -63,6 +72,7 @@ export default function ChatWindow({
   }, [vendorId, customer]);
 
   useEffect(() => {
+    if (!shouldAutoScrollRef.current) return;
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
   }, [messages]);
 
@@ -85,7 +95,10 @@ export default function ChatWindow({
       );
       if (!res.ok) return;
       const data = (await res.json()) as Msg[];
-      if (activeCustomerRef.current === selectedCustomer) setMessages(data || []);
+      if (activeCustomerRef.current === selectedCustomer) {
+        shouldAutoScrollRef.current = true;
+        setMessages(data || []);
+      }
     } catch {
       if (activeCustomerRef.current === selectedCustomer) setInput(text);
     } finally {
@@ -94,7 +107,7 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col bg-gradient-to-b from-[#f9f4e9] to-[#f4eddf]">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-[#f9f4e9] to-[#f4eddf]">
       <div className="flex items-center gap-3 border-b border-[#e7dccb] bg-white/95 px-4 py-3 backdrop-blur-sm">
         <button
           onClick={() => onOpenContacts && onOpenContacts()}
@@ -114,11 +127,17 @@ export default function ChatWindow({
         </div>
       </div>
 
-      <div ref={bodyRef} className="chat-pattern flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-5 pb-28">
+      <div
+        ref={bodyRef}
+        onScroll={updateAutoScrollPreference}
+        className="chat-pattern flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-5 pb-28"
+      >
         {messages.length === 0 && (
           <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-[#eadfce] bg-white/90 px-5 py-4 text-center shadow-sm">
             <p className="font-fraunces text-lg text-green">Start the conversation</p>
-            <p className="mt-1 text-sm text-ink-light">Messages with this customer will appear here.</p>
+            <p className="mt-1 text-sm text-ink-light">
+              Messages with this customer will appear here.
+            </p>
           </div>
         )}
         {messages.map((m) => (
@@ -127,21 +146,21 @@ export default function ChatWindow({
             className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`relative max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
+              className={`relative max-w-[60%] rounded-2xl px-4 py-2.5 shadow-sm ${
                 m.sender === 'vendor'
                   ? 'bg-gradient-to-br from-green to-green-mid text-white'
                   : 'border border-[#ece1d2] bg-white text-ink'
               }`}
             >
-              <div className="whitespace-pre-line text-sm">{m.content}</div>
+              <div className="whitespace-pre-line text-sm break-words overflow-hidden">
+                {m.content}
+              </div>
               <div
                 className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${
                   m.sender === 'vendor' ? 'text-white/80' : 'text-ink-light'
                 }`}
               >
-                <span>
-                  {formatMessageTime(m.created_at)}
-                </span>
+                <span>{formatMessageTime(m.created_at)}</span>
                 {m.sender === 'vendor' ? <span className="text-xs">✓✓</span> : null}
               </div>
             </div>
@@ -173,7 +192,7 @@ export default function ChatWindow({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          className="flex-1 rounded-full border border-[#e2d7c5] bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-light"
+          className="flex-2 rounded-full border border-[#e2d7c5] bg-white px-4 py-2.5 text-sm outline-none transition focus:border-green-light"
           placeholder="Write a message"
         />
         <button
