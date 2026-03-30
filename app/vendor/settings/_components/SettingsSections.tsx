@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SettingsItem, EditingState, VendorSettings } from '../_types';
 
 type Props = {
