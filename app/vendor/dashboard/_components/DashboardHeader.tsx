@@ -19,7 +19,7 @@ export default function DashboardHeader({
       <div className="absolute bottom-0 left-0 right-0 h-10 bg-cream rounded-t-[50%]" />
       <div className="flex justify-between items-start mb-5">
         <div>
-          <p className="text-white/60 text-[13px]">Good morning,</p>
+          <p className="text-white/60 text-[13px]">{`Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}`},</p>
           <h1 className="font-fraunces text-[22px] font-bold text-white inline-flex items-center gap-1.5">
             {vendorName} <Hand className="w-5 h-5 text-amber" />
           </h1>

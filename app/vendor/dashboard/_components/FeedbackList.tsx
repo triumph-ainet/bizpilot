@@ -10,7 +10,7 @@ export default function FeedbackList({ feedback }: { feedback: any[] }) {
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1">
               <div className="font-semibold text-slate-900">{f.customer_identifier || 'Customer'}</div>
-              <div className="text-xs text-slate-400 mt-1">{new Date(f.created_at).toLocaleString()}</div>
+              <div className="text-s text-slate-400 mt-1">{new Date(f.created_at).toLocaleString()}</div>
             </div>
             <div className="flex items-center gap-1 px-2 py-1 bg-amber-50 rounded">
               <span className="text-sm font-bold text-amber-700">{f.rating ?? '-'}</span>
