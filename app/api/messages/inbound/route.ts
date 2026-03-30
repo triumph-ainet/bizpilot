@@ -40,21 +40,79 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedMessage = { ...message, vendorId };
+    const supabase = createServerSupabase();
+    const senderId = String(message.senderId || '').trim();
+    const appBaseUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
+
+    // Reuse latest session for this customer/vendor pair; otherwise create one now.
+    let sessionToken: string | null = null;
+    if (senderId) {
+      const { data: existingSession } = await supabase
+        .from('sessions')
+        .select('id, token')
+        .eq('vendor_id', vendorId)
+        .eq('customer_identifier', senderId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingSession?.token) {
+        sessionToken = existingSession.token;
+        await supabase
+          .from('sessions')
+          .update({ last_accessed: new Date().toISOString() })
+          .eq('id', existingSession.id);
+      } else {
+        const { data: createdSession, error: sessionInsertError } = await supabase
+          .from('sessions')
+          .insert({
+            vendor_id: vendorId,
+            customer_identifier: senderId,
+            customer_email: senderId.includes('@') ? senderId : null,
+            last_accessed: new Date().toISOString(),
+          })
+          .select('id, token')
+          .single();
+
+        if (sessionInsertError) {
+          console.warn('[messages/inbound] failed to create session', {
+            vendorId,
+            senderId,
+            error: sessionInsertError.message,
+          });
+        }
+        sessionToken = createdSession?.token || null;
+      }
+    }
+
+    const sessionUrl = sessionToken
+      ? appBaseUrl
+        ? `${appBaseUrl}/session/${sessionToken}`
+        : `/session/${sessionToken}`
+      : null;
+
     const catalog = await getVendorProducts(vendorId).catch(() => []);
     const parsed = await parseOrder(message.text || '', catalog);
 
     if (parsed.items.length === 0) {
-      return NextResponse.json(
-        adapter.formatReply({
-          text: "Sorry, I couldn't find those items in our catalog. Could you check the product names and try again?",
-        })
-      );
+      const noOrderText =
+        channel === 'whatsapp' && sessionUrl
+          ? "Sorry, I couldn't find those items in our catalog. Could you check the product names and try again?\n\nContinue this chat anytime: " +
+            sessionUrl
+          : "Sorry, I couldn't find those items in our catalog. Could you check the product names and try again?";
+
+      return NextResponse.json({
+        ...adapter.formatReply({
+          text: noOrderText,
+        }),
+        sessionUrl: channel === 'whatsapp' ? sessionUrl : null,
+      });
     }
 
     const { order, items } = await createOrder(parsed, normalizedMessage, catalog);
     const invoice = await createInvoiceForOrder(order.id, order.total, items).catch(() => null);
 
-    const sender = String(message.senderId || '').trim();
+    const sender = senderId;
     const appName = (process.env.NEXT_PUBLIC_APP_NAME || 'bizpilot.local').trim();
     const paymentEmail = sender.includes('@')
       ? sender
@@ -63,13 +121,12 @@ export async function POST(req: NextRequest) {
     const payment = await initializePayment(
       order.id,
       order.total * 100, // convert to kobo
-      paymentEmail,
+      paymentEmail
     ).catch(() => ({
-      paymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${order.id}`,
+      paymentUrl: appBaseUrl ? `${appBaseUrl}/pay/${order.id}` : `/pay/${order.id}`,
       reference: order.id,
     }));
 
-    const supabase = createServerSupabase();
     const { error: paymentInsertError } = await supabase.from('payments').insert({
       order_id: order.id,
       interswitch_reference: payment.reference,
@@ -84,35 +141,32 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create a persistent session so customer can resume via a shareable link
-    const { data: sessionData, error: sessionInsertError } = await supabase
-      .from('sessions')
-      .insert({
-        vendor_id: vendorId,
-        order_id: order.id,
-        customer_identifier: message.senderId,
-        customer_email:
-          message.senderId && message.senderId.includes('@') ? message.senderId : null,
-        last_accessed: new Date().toISOString(),
-      })
-      .select()
-      .single();
+    if (sessionToken) {
+      const { error: sessionUpdateError } = await supabase
+        .from('sessions')
+        .update({ order_id: order.id, last_accessed: new Date().toISOString() })
+        .eq('token', sessionToken);
 
-    if (sessionInsertError) {
-      console.warn('[messages/inbound] failed to create session', {
-        orderId: order.id,
-        error: sessionInsertError.message,
-      });
+      if (sessionUpdateError) {
+        console.warn('[messages/inbound] failed to update session order', {
+          orderId: order.id,
+          sessionToken,
+          error: sessionUpdateError.message,
+        });
+      }
     }
 
-    const sessionToken = sessionData?.token || null;
-
-    const confirmationText = await generateOrderConfirmation(
+    const baseConfirmationText = await generateOrderConfirmation(
       items.map((i) => ({ name: i.product_name, quantity: i.quantity, price: i.unit_price })),
       order.total,
       payment.paymentUrl,
       invoice?.invoice_number
     );
+
+    const confirmationText =
+      channel === 'whatsapp' && sessionUrl
+        ? `${baseConfirmationText}\n\nContinue this chat anytime: ${sessionUrl}`
+        : baseConfirmationText;
 
     await supabase.from('messages').insert([
       {
@@ -133,13 +187,8 @@ export async function POST(req: NextRequest) {
 
     const reply = adapter.formatReply({ text: confirmationText, paymentUrl: payment.paymentUrl });
 
-    const chatUrl = `${process.env.NEXT_PUBLIC_APP_URL}/chat/session/${vendorId}/${encodeURIComponent(
-      message.senderId
-    )}`;
-
-    const sessionUrl = sessionToken
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/session/${sessionToken}`
-      : null;
+    const chatPath = `/chat/session/${vendorId}/${encodeURIComponent(message.senderId)}`;
+    const chatUrl = appBaseUrl ? `${appBaseUrl}${chatPath}` : chatPath;
 
     if (message.senderId && message.senderId.includes('@')) {
       const { data: vendor } = await supabase
@@ -170,6 +219,7 @@ export async function POST(req: NextRequest) {
       chatUrl,
       sessionUrl,
       order: {
+        id: order.id,
         items: items.map((i) => ({ name: i.product_name, qty: i.quantity, price: i.unit_price })),
         total: order.total,
         paymentUrl: payment.paymentUrl,
