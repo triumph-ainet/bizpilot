@@ -2,6 +2,8 @@
 create table if not exists vendors (
   id                  uuid primary key default gen_random_uuid(),
   business_name       text not null,
+  city                text,
+  category            text,
   phone               text not null unique,
   password_hash       text not null,
   bank_name           text,

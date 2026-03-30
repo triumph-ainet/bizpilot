@@ -3,6 +3,49 @@ import { createServerSupabase } from '@/lib/supabase';
 import { getVendorSessionFromRequest } from '@/lib/auth';
 import { buildOnboardingCompletedHtml, sendInvoiceEmail } from '@/lib/services/email.service';
 
+function normalizeSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '')
+    .slice(0, 40);
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getVendorSessionFromRequest(req);
+    const vendorId = session?.vendorId;
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rawSlug = req.nextUrl.searchParams.get('slug') || '';
+    const slug = normalizeSlug(rawSlug);
+
+    if (slug.length < 3) {
+      return NextResponse.json(
+        { available: false, error: 'Store link must be at least 3 characters' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = createServerSupabase();
+    const { data, error } = await supabase
+      .from('vendors')
+      .select('id')
+      .eq('store_slug', slug)
+      .neq('id', vendorId)
+      .limit(1);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ available: (data?.length || 0) === 0, slug });
+  } catch {
+    return NextResponse.json({ error: 'Failed to validate store link' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getVendorSessionFromRequest(req);
@@ -26,10 +69,7 @@ export async function POST(req: NextRequest) {
     };
 
     if (slug && typeof slug === 'string') {
-      updates.store_slug = slug
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '')
-        .slice(0, 40);
+      updates.store_slug = normalizeSlug(slug);
     }
 
     if (bankCode && bankName && accountNumber && accountName) {
@@ -44,6 +84,9 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.from('vendors').update(updates).eq('id', vendorId);
 
     if (error) {
+      if (error.code === '23505' && updates.store_slug) {
+        return NextResponse.json({ error: 'Store link is already taken' }, { status: 409 });
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

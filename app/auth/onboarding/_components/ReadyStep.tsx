@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui';
 import { MessageCircle, Zap, CheckCircle, Rocket } from 'lucide-react';
 
@@ -12,6 +13,15 @@ export default function ReadyStep({
   loading: boolean;
   onFinish: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+  const storeUrl = `${window.location.origin}/store/${slug || 'your-store'}`;
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(storeUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-5">
       <div className="text-center py-4">
@@ -25,12 +35,14 @@ export default function ReadyStep({
       <div className="bg-green rounded-2xl px-5 py-4 flex items-center justify-between">
         <div>
           <p className="text-white/60 text-xs">Share with customers</p>
-          <p className="text-white font-semibold text-[15px] mt-0.5">
-            `${window.location.origin}/store/${slug || 'your-store'}`
-          </p>
+          <p className="text-white font-semibold text-[15px] mt-0.5">{storeUrl}</p>
         </div>
-        <button className="bg-amber text-green text-xs font-bold px-3.5 py-2 rounded-lg">
-          Copy
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="bg-amber text-green text-xs font-bold px-3.5 py-2 rounded-lg"
+        >
+          {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
 

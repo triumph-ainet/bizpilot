@@ -87,6 +87,7 @@ export default function RegisterPage() {
                   className="flex-1 bg-cream border-[1.5px] border-cream-dark rounded-xl px-4 py-3.5 font-dm text-[15px] text-ink placeholder:text-ink-light outline-none focus:border-green-bright transition-colors"
                   type="tel"
                   placeholder="081 234 5678"
+                  maxLength={11}
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   required
