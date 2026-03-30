@@ -36,7 +36,9 @@ export default function useVendorSettings() {
     async function fetchSettings() {
       try {
         setLoading(true);
-        const res = await fetch('/api/vendors/settings');
+        const res = await fetch('/api/vendors/settings', {
+          cache: 'force-cache',
+        });
         if (!res.ok) throw new Error('Failed to load settings');
         const data = await res.json();
         setSettings(data);
