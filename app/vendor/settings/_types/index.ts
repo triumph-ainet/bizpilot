@@ -1,6 +1,8 @@
 export interface VendorSettings {
   businessName: string;
   phone: string;
+  city: string;
+  category: string;
   storeSlug: string;
   bankName: string;
   bankCode: string;
@@ -13,6 +15,8 @@ export interface VendorSettings {
 export interface EditingState {
   businessName?: string;
   phone?: string;
+  city?: string;
+  category?: string;
   bankName?: string;
   bankCode?: string;
   accountNumber?: string;

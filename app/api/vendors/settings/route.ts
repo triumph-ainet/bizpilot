@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabase
       .from('vendors')
       .select(
-        'id, business_name, phone, store_slug, bank_name, bank_code, account_number, account_name, account_verified_at, low_stock_threshold'
+        'id, business_name, phone, store_slug, bank_name, bank_code, account_number, account_name, account_verified_at, city, category, low_stock_threshold'
       )
       .eq('id', vendorId)
       .single();
@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
       accountNumber: data.account_number,
       accountName: data.account_name,
       accountVerified: !!data.account_verified_at,
+      city: data.city,
+      category: data.category,
       lowStockThreshold: data.low_stock_threshold || 5,
     });
   } catch {

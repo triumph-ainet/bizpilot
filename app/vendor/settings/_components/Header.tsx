@@ -21,7 +21,7 @@ export default function Header({ settings, isLoading = false }: Props) {
         <div>
           <p className="font-fraunces text-[20px] font-bold text-white">{businessName}</p>
           <p className="text-white/55 text-[13px]">
-            {isLoading ? 'Loading store details...' : `${businessName} · Lagos`}
+            {isLoading ? 'Loading store details...' : `${businessName} · ${settings?.city || 'City'}, ${settings?.category || 'Category'}`}
           </p>
         </div>
       </div>
