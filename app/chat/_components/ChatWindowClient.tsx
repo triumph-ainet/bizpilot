@@ -3,12 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Smile, SendHorizonalIcon, ChevronLeft } from 'lucide-react';
 import EmojiPicker from '@/components/EmojiPicker';
+import ChatMessageBubble from './ChatMessageBubble';
 
 type Msg = { id: string; sender: string; content: string; created_at: string };
-
-function formatMessageTime(value: string) {
-  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
 
 export default function ChatWindow({
   vendorId,
@@ -141,30 +138,7 @@ export default function ChatWindow({
           </div>
         )}
         {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`relative max-w-[60%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                m.sender === 'vendor'
-                  ? 'bg-gradient-to-br from-green to-green-mid text-white'
-                  : 'border border-[#ece1d2] bg-white text-ink'
-              }`}
-            >
-              <div className="whitespace-pre-line text-sm break-words overflow-hidden">
-                {m.content}
-              </div>
-              <div
-                className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${
-                  m.sender === 'vendor' ? 'text-white/80' : 'text-ink-light'
-                }`}
-              >
-                <span>{formatMessageTime(m.created_at)}</span>
-                {m.sender === 'vendor' ? <span className="text-xs">✓✓</span> : null}
-              </div>
-            </div>
-          </div>
+          <ChatMessageBubble key={m.id} message={m} />
         ))}
       </div>
 
