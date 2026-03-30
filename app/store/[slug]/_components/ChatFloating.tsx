@@ -101,13 +101,17 @@ export default function ChatFloating({ vendorId }: { vendorId?: string }) {
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              type="tel"
+              maxLength={11}
               placeholder="WhatsApp number"
               className="w-full px-3 py-2 rounded-lg border border-ink-light bg-cream placeholder:italic placeholder:text-ink-light text-sm"
+              required
             />
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Write a message... (Shift+Enter for newline)"
+              required
               className="w-full px-3 py-2 rounded-lg resize-none h-24 border border-ink-light bg-white placeholder:text-ink-light shadow-sm focus:outline-none focus:ring-2 focus:ring-green"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {

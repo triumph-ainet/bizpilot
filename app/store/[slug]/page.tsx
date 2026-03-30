@@ -19,6 +19,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
   const [sent, setSent] = useState(false);
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -52,6 +53,9 @@ export default function StorePage({ params }: { params: { slug: string } }) {
     e.preventDefault();
     setLoading(true);
     setSubmitError('');
+    setPaymentUrl(null);
+    setSessionUrl(null);
+    setOrderId(null);
     try {
       const res = await fetch('/api/messages/inbound', {
         method: 'POST',
@@ -67,9 +71,21 @@ export default function StorePage({ params }: { params: { slug: string } }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not submit order');
 
+      const responseOrderId = data?.order?.id || null;
+      const responsePaymentUrl = data?.order?.paymentUrl || data.paymentUrl || null;
+      const responseSessionUrl = data.sessionUrl || null;
+
+      if (!responseOrderId && !responsePaymentUrl && !responseSessionUrl) {
+        throw new Error(
+          data.text ||
+            'We could not create a valid order from that message. Please include product names and quantities.'
+        );
+      }
+
       setSent(true);
-      setSessionUrl(data.sessionUrl || null);
-      setPaymentUrl(data?.order?.paymentUrl || data.paymentUrl || null);
+      setSessionUrl(responseSessionUrl);
+      setOrderId(responseOrderId);
+      setPaymentUrl(responsePaymentUrl || (responseOrderId ? `/pay/${responseOrderId}` : null));
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Could not submit order');
     } finally {
@@ -155,6 +171,7 @@ export default function StorePage({ params }: { params: { slug: string } }) {
           setSent={setSent}
           sessionUrl={sessionUrl}
           paymentUrl={paymentUrl}
+          orderId={orderId}
           showShareModal={showShareModal}
           setShowShareModal={setShowShareModal}
           submitError={submitError}
